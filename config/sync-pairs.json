@@ -1,0 +1,181 @@
+{
+  "syncPairs": [
+    {
+      "id": "48665838-a567-4359-bac9-393ef6da980d",
+      "name": "Doku",
+      "source": "\\\\wsl.localhost\\Ubuntu\\root\\doku-system",
+      "target": "C:\\Streaming\\Code\\doku",
+      "direction": "to-windows",
+      "lastSync": "2025-12-20T14:28:19.142Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-20T14:28:19.142Z",
+        "copied": 10,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-14T05:52:32.760Z",
+      "updatedAt": "2025-12-20T14:28:19.143Z",
+      "features": []
+    },
+    {
+      "id": "87fdd2ee-4737-4369-b904-4b8c80df7356",
+      "name": "Visual",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\visual",
+      "target": "C:\\Streaming\\Code\\visual",
+      "direction": "to-windows",
+      "lastSync": "2025-12-26T23:58:07.334Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-26T23:58:07.334Z",
+        "copied": 5,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-14T05:53:38.436Z",
+      "updatedAt": "2025-12-26T23:58:07.335Z",
+      "features": [
+        "a7ad65f8-d584-4338-843d-4d3202a8a05d",
+        "4f09e47d-292e-49de-9248-673a6a949d55",
+        "9fe149a2-e7e8-404d-a108-4fdf9d457638",
+        "fe94b742-468f-46d9-95c6-569c6048ca81",
+        "536ecb46-3b7b-495b-81ae-e5a61ae1b1d5"
+      ]
+    },
+    {
+      "id": "a3cef7d9-f963-4285-b1b2-e8b3d23cbe95",
+      "name": "Minecraft",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\minecraft",
+      "target": "C:\\Streaming\\Code\\Minecraft",
+      "direction": "to-windows",
+      "lastSync": "2025-12-21T00:52:06.089Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-21T00:52:06.089Z",
+        "copied": 2,
+        "deleted": 13,
+        "errors": []
+      },
+      "createdAt": "2025-12-14T20:09:34.040Z",
+      "updatedAt": "2025-12-21T00:52:06.090Z",
+      "features": [
+        "e55ce2ee-3836-424e-89c2-c30e73b9ab27"
+      ]
+    },
+    {
+      "id": "6c863c07-24d2-406e-bf26-4a086f05601d",
+      "name": "test",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\notes",
+      "target": "C:\\Streaming\\Code\\test",
+      "direction": "to-windows",
+      "lastSync": "2025-12-26T18:26:42.050Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-26T18:26:42.050Z",
+        "copied": 9,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-15T19:48:33.376Z",
+      "updatedAt": "2025-12-26T18:26:42.051Z"
+    },
+    {
+      "id": "4488225b-2a8f-41f9-acff-ac4f25f125d2",
+      "name": "Discord",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\discord",
+      "target": "C:\\Streaming\\Code\\discord-bot",
+      "direction": "to-windows",
+      "lastSync": "2025-12-27T01:00:35.051Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-27T01:00:35.051Z",
+        "copied": 8,
+        "deleted": 21,
+        "errors": []
+      },
+      "createdAt": "2025-12-15T20:26:59.509Z",
+      "updatedAt": "2025-12-27T01:00:35.052Z"
+    },
+    {
+      "id": "bb031f43-26df-4187-9e1e-ecb7a184ec4e",
+      "name": "shader",
+      "source": "\\\\wsl.localhost\\Ubuntu\\root\\filter",
+      "target": "C:\\Streaming\\Code\\shader",
+      "direction": "to-windows",
+      "features": [],
+      "lastSync": "2025-12-20T19:53:11.165Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-20T19:53:11.165Z",
+        "copied": 5,
+        "deleted": 1,
+        "errors": []
+      },
+      "createdAt": "2025-12-20T19:53:05.885Z",
+      "updatedAt": "2025-12-20T19:53:11.165Z"
+    },
+    {
+      "id": "83cd435d-b597-4514-a710-d21ed2fcf1b9",
+      "name": "Notes",
+      "source": "\\\\wsl$\\Ubuntu\\home\\aaorn\\notes",
+      "target": "C:\\Streaming\\Code\\notes",
+      "direction": "to-windows",
+      "features": [],
+      "lastSync": "2025-12-26T21:06:36.975Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-26T21:06:36.975Z",
+        "copied": 3,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-22T13:52:24.243Z",
+      "updatedAt": "2025-12-26T21:06:36.975Z"
+    },
+    {
+      "id": "c3bc9ef7-02f2-4f85-a25a-a06df7081b8c",
+      "name": "kart",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\kart",
+      "target": "C:\\Streaming\\Code\\mario kart roguelike2",
+      "direction": "to-windows",
+      "features": [],
+      "lastSync": "2025-12-25T18:34:49.722Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-25T18:34:49.722Z",
+        "copied": 4,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-25T17:41:45.039Z",
+      "updatedAt": "2025-12-25T18:34:49.722Z"
+    },
+    {
+      "id": "6ed8c37d-3931-45a1-a809-5c75e05b50c3",
+      "name": "up",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\up",
+      "target": "C:\\Streaming\\Code\\up",
+      "direction": "to-windows",
+      "features": [],
+      "lastSync": "2025-12-26T00:11:45.059Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-26T00:11:45.059Z",
+        "copied": 9,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-25T22:54:45.496Z",
+      "updatedAt": "2025-12-26T00:11:45.059Z"
+    },
+    {
+      "id": "e01a435a-24f9-4dce-be02-eecf37682820",
+      "name": "clip",
+      "source": "\\\\wsl.localhost\\Ubuntu\\home\\aaorn\\clip",
+      "target": "C:\\Streaming\\Code\\clip",
+      "direction": "to-windows",
+      "features": [],
+      "lastSync": "2025-12-26T23:52:57.187Z",
+      "lastSyncStats": {
+        "timestamp": "2025-12-26T23:52:57.187Z",
+        "copied": 7,
+        "deleted": 0,
+        "errors": []
+      },
+      "createdAt": "2025-12-26T01:32:57.091Z",
+      "updatedAt": "2025-12-26T23:52:57.187Z"
+    }
+  ],
+  "lastUpdate": "2025-12-27T01:00:35.052Z"
+}

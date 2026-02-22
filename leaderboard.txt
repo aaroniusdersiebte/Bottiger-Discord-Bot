@@ -1,0 +1,8 @@
+
+Ich möchte meinen Discord Bot erweitern. Er soll Ein Leaderboard in einem Discord Channel visualisieren. Das leaderboard bezieht sich auf die menge an nachrichten.
+ausgelesen wird es aus der user.json. Diese wird beschrieben durch ein externes Programm von mir. Dementsprechend kann sich auch nur etwas ändern wenn dieses Programm auch aktiv ist. Um ressourcen zu spaaren möchte ich das der Bot auch nur die Daten versucht zu aktualisieren wenn das andere Programm an ist (also wenn ich streame)
+Es soll den titel Die Besten Schreiberlinge haben, die Top 3 sind hervorgehoben und es werden insgesamt die top 15 user angezeigt. Es soll auch erkennbar sein auf welcher Platform die user sind (zb durch rotes und lila herz = youtube / twitch)
+
+Ähnlich dazu möchte ich einen Punkte leaderboard mit dem titel  Die Reichsten das ähnlich wie das leaderboard anzeigt wer am meisten Punkte gespaart hat.
+
+Ich möchte das die leaderboards optisch sehr ansprechend sind und auch eine art von Progress anzeige die Visualisiert wie hoch die Summe ist (nachrichten / Punkte)

@@ -1,0 +1,7 @@
+Dies ist ein Discord bot. es sollen noch einige features hinzugefügt werden aber momentan möchte ich als erstes Implementieren wie user ihren charakter erstellen können für meine streams (bei spenden zb werden diese angezeigt über mein Programm Visualiser)
+
+Momentan kann ich zwar schon per drop down die charaktere auswählen und kann auch in einem chat alle assets darstellen und deren namen geben aber mir fehlt das der user sieht wie sein charakter dann aussehen würde. auch beim sohw wolpertinger wird kein bild geschickt.
+wie könnten wir das besser gestalten?
+
+Momentan läuft der code auch viel zu schnell ab. Er sollte erst nach Einer woche ablaufen zum verifizieren. die aktion wolpertinger show soll bitte auch nur für die person sichtbar sein die es angefordert hat
+kann man eigentlich bei der username angabe auto fill ermöglichen?

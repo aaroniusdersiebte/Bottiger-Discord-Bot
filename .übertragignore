@@ -1,0 +1,15 @@
+# Globale Ignore-Patterns (in beide Richtungen)
+node_modules
+.git
+.DS_Store
+Thumbs.db
+*.log
+config
+
+# Nur beim Sync nach Windows ignorieren
+[to-windows]
+# Beispiel: *.sh
+
+# Nur beim Sync nach Linux ignorieren
+[to-linux]
+# Beispiel: *.exe

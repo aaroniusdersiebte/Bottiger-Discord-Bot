@@ -1,0 +1,75 @@
+{
+  "features": {
+    "e55ce2ee-3836-424e-89c2-c30e73b9ab27": {
+      "id": "e55ce2ee-3836-424e-89c2-c30e73b9ab27",
+      "title": "Minecraft",
+      "filename": "minecraft.md",
+      "syncPairs": [],
+      "discordMessageId": "1450613180186230796",
+      "createdAt": "2025-12-15T20:27:40.416Z",
+      "updatedAt": "2025-12-15T20:27:40.416Z"
+    },
+    "a7ad65f8-d584-4338-843d-4d3202a8a05d": {
+      "id": "a7ad65f8-d584-4338-843d-4d3202a8a05d",
+      "title": "Meme",
+      "filename": "meme.md",
+      "syncPairs": [],
+      "discordMessageId": "1450613182023340152",
+      "createdAt": "2025-12-16T18:57:48.066Z",
+      "updatedAt": "2025-12-16T18:57:48.066Z"
+    },
+    "9fe149a2-e7e8-404d-a108-4fdf9d457638": {
+      "id": "9fe149a2-e7e8-404d-a108-4fdf9d457638",
+      "title": "Donations",
+      "filename": "donations.md",
+      "syncPairs": [],
+      "discordMessageId": "1450613183122378763",
+      "createdAt": "2025-12-16T19:06:42.223Z",
+      "updatedAt": "2025-12-16T19:06:42.223Z"
+    },
+    "4f09e47d-292e-49de-9248-673a6a949d55": {
+      "id": "4f09e47d-292e-49de-9248-673a6a949d55",
+      "title": "Punkte Glücksrad",
+      "filename": "punkte-glcksrad.md",
+      "syncPairs": [],
+      "discordMessageId": "1451648012026777712",
+      "createdAt": "2025-12-19T18:46:42.421Z",
+      "updatedAt": "2025-12-19T18:46:42.421Z"
+    },
+    "fe94b742-468f-46d9-95c6-569c6048ca81": {
+      "id": "fe94b742-468f-46d9-95c6-569c6048ca81",
+      "title": "Umfrage",
+      "filename": "umfrage.md",
+      "syncPairs": [],
+      "discordMessageId": "1451648013284933945",
+      "createdAt": "2025-12-19T18:47:05.385Z",
+      "updatedAt": "2025-12-19T18:47:05.385Z"
+    },
+    "536ecb46-3b7b-495b-81ae-e5a61ae1b1d5": {
+      "id": "536ecb46-3b7b-495b-81ae-e5a61ae1b1d5",
+      "title": "Wolpertinger customizen ",
+      "filename": "wolpertinger-customizen-.md",
+      "syncPairs": [],
+      "discordMessageId": "1451650115432616041",
+      "createdAt": "2025-12-19T18:57:04.296Z",
+      "updatedAt": "2025-12-19T18:57:04.296Z"
+    },
+    "02637dc3-7c4e-40ae-ae2f-e7575307c652": {
+      "id": "02637dc3-7c4e-40ae-ae2f-e7575307c652",
+      "title": "tts",
+      "filename": "tts.md",
+      "discordMessageId": "1453116746452963421",
+      "createdAt": "2025-12-23T19:49:19.328Z",
+      "updatedAt": "2025-12-23T19:49:19.328Z"
+    },
+    "4af45c03-6248-4d08-8bf9-09beab2f5b5f": {
+      "id": "4af45c03-6248-4d08-8bf9-09beab2f5b5f",
+      "title": "Sound effekte",
+      "filename": "sound-effekte.md",
+      "discordMessageId": "1453116747627626576",
+      "createdAt": "2025-12-23T19:59:22.965Z",
+      "updatedAt": "2025-12-23T19:59:22.965Z"
+    }
+  },
+  "lastUpdate": "2025-12-23T20:07:10.421Z"
+}

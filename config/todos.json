@@ -1,0 +1,182 @@
+{
+  "todos": [
+    {
+      "id": "d0bd1d1d-761b-4edc-9ff7-e0e60e906aed",
+      "title": "schnick schnack schnuck",
+      "description": "",
+      "featureId": "76b3d0b7-ea73-48ec-82d8-4bb14b298281",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-16T18:10:28.922Z",
+      "updatedAt": "2025-12-20T15:09:28.091Z",
+      "closedAt": null,
+      "type": "plan"
+    },
+    {
+      "id": "46a74412-aedb-4f89-a119-e8904c5f796c",
+      "title": "meme unten abgeschnitten",
+      "description": "glaube das das einfach nur abgeschnitten wurde  / Box ist zu klein",
+      "featureId": "a7ad65f8-d584-4338-843d-4d3202a8a05d",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-16T18:58:25.946Z",
+      "updatedAt": "2025-12-20T15:09:35.883Z",
+      "closedAt": null,
+      "type": "bug"
+    },
+    {
+      "id": "caa4d2aa-00ad-4c25-a08f-d5aaaecf93be",
+      "title": "Bad word Log discord ",
+      "description": "",
+      "featureId": "76b3d0b7-ea73-48ec-82d8-4bb14b298281",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-18T15:45:19.572Z",
+      "updatedAt": "2025-12-20T15:10:12.543Z",
+      "closedAt": null,
+      "type": "plan"
+    },
+    {
+      "id": "8e304d5e-dc89-42fc-8445-937b48e74fdc",
+      "title": "!Befehle löschen und bamn nach Warnung ",
+      "description": "",
+      "featureId": "76b3d0b7-ea73-48ec-82d8-4bb14b298281",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-18T15:45:29.486Z",
+      "updatedAt": "2025-12-20T15:10:21.873Z",
+      "closedAt": null,
+      "type": "plan"
+    },
+    {
+      "id": "86309bfb-3a7d-43b0-adb9-f34037759d4e",
+      "title": "Sound mODULE",
+      "description": "Wolperting und megaphone",
+      "featureId": null,
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-19T17:24:01.113Z",
+      "updatedAt": "2025-12-19T17:24:01.113Z",
+      "closedAt": null
+    },
+    {
+      "id": "e4b5eadf-ef9a-4baf-9f7a-1d918844724b",
+      "title": "Blur Effekt für Sozial media",
+      "description": "",
+      "featureId": "",
+      "urgency": "low",
+      "status": "open",
+      "createdAt": "2025-12-19T18:44:56.845Z",
+      "updatedAt": "2025-12-19T19:05:52.428Z",
+      "closedAt": null
+    },
+    {
+      "id": "aa3166bf-eec9-48a2-aa44-477340da5431",
+      "title": "Hyperlink nachricht",
+      "description": "Wie  Info kästchen alle kategorien eigener kasten (evtl kategorien vordefinienren)",
+      "featureId": null,
+      "urgency": "low",
+      "status": "open",
+      "createdAt": "2025-12-19T19:01:14.482Z",
+      "updatedAt": "2025-12-19T19:01:14.482Z",
+      "closedAt": null
+    },
+    {
+      "id": "7835f934-4c01-4ec1-b15a-84acfe9f005b",
+      "title": "donations zählen zum users.json",
+      "description": "",
+      "featureId": null,
+      "type": "plan",
+      "urgency": "medium",
+      "status": "closed",
+      "createdAt": "2025-12-21T11:31:51.499Z",
+      "updatedAt": "2025-12-21T20:19:34.007Z",
+      "closedAt": "2025-12-21T20:19:34.007Z"
+    },
+    {
+      "id": "6f7ed46e-634d-460e-b2a6-30bdf0bade70",
+      "title": "note pad programm",
+      "description": "Groß und klein machen, automatisches \"dock system\" wo ich auf meinem zweiten bildschirm rechte ecke habe und automatisch dor t hin  gebracht werden kann",
+      "featureId": "",
+      "type": "plan",
+      "urgency": "medium",
+      "status": "closed",
+      "createdAt": "2025-12-21T13:06:50.567Z",
+      "updatedAt": "2025-12-23T13:31:30.853Z",
+      "closedAt": "2025-12-23T13:31:30.853Z"
+    },
+    {
+      "id": "b903f007-9f9f-4eab-a111-01216a48c45d",
+      "title": "Docs",
+      "description": "Größer machen / kleiner machen preset größe",
+      "featureId": null,
+      "type": "plan",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-21T20:14:30.226Z",
+      "updatedAt": "2025-12-21T20:14:30.226Z",
+      "closedAt": null
+    },
+    {
+      "id": "3c7725db-0b44-45e1-abe0-3a2cf90125d0",
+      "title": "ränder economy fenster entfernen",
+      "description": "Oberer rand zeigt per farbe rressource an, weg damit color coding von arbeitern besser sichtbar ist",
+      "featureId": "e55ce2ee-3836-424e-89c2-c30e73b9ab27",
+      "type": "plan",
+      "urgency": "medium",
+      "status": "closed",
+      "createdAt": "2025-12-21T20:15:07.717Z",
+      "updatedAt": "2025-12-21T21:45:36.876Z",
+      "closedAt": "2025-12-21T21:45:36.876Z"
+    },
+    {
+      "id": "31d668e5-8de4-4d5c-825a-07a47d49ee96",
+      "title": "follower bleiben im ui",
+      "description": "",
+      "featureId": "e55ce2ee-3836-424e-89c2-c30e73b9ab27",
+      "type": "bug",
+      "urgency": "medium",
+      "status": "closed",
+      "createdAt": "2025-12-21T20:16:15.141Z",
+      "updatedAt": "2025-12-21T21:45:38.803Z",
+      "closedAt": "2025-12-21T21:45:38.803Z"
+    },
+    {
+      "id": "abd5efc1-7778-479d-8f0a-a9a4779c2ba5",
+      "title": "Monster greifen Villager nicht an sogar wenn Core zerstört ist",
+      "description": "",
+      "featureId": null,
+      "type": "plan",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-21T20:47:30.918Z",
+      "updatedAt": "2025-12-21T20:47:30.918Z",
+      "closedAt": null
+    },
+    {
+      "id": "76c8b7eb-311b-4566-901e-a71f19b24895",
+      "title": "Sprechblase optimieren",
+      "description": "",
+      "featureId": "76b3d0b7-ea73-48ec-82d8-4bb14b298281",
+      "type": "plan",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-23T14:13:00.059Z",
+      "updatedAt": "2025-12-23T14:13:00.059Z",
+      "closedAt": null
+    },
+    {
+      "id": "9a06f63e-482c-4ef5-b503-a3bb3b0ac1f6",
+      "title": "economy",
+      "description": "1. Fehlende Verbrauchs-Logik (Ressourcen-Senken)\n  Einige Ressourcen werden zwar produziert, aber im Code noch nicht konsumiert:\n   * Munition (Ammo): Der Schmied stellt sie her, aber die Türme (TowerAttackLogic.java) verbrauchen sie momentan noch\n     nicht. Sie schießen aktuell unbegrenzt.\n   * Tränke (Potions): Der Alchemist stellt sie her, aber es gibt im SupportGoals.java oder CombatGoals.java noch keine\n     Logik, die diese Tränke an Kämpfer verteilt oder Effekte (wie Strength I) auslöst.\n   * Repair Kits: Der Schmied stellt sie her, aber das RepairCoreGoal zieht diese momentan nicht vom ResourceManager ab.\n     Der Core wird also \"kostenlos\" repariert, solange ein Builder da ist.\n2 Maurer / zement verarbeiter\n\n  3. Logik-Lücke beim \"Wall-Block\" (dein Punkt)\n   * Status Quo: Das RepairWallGoal in WorkGoals.java verbraucht aktuell Zement direkt, um Mauerblöcke zu setzen.\n   * Das Problem: Zement ist eigentlich ein Bindemittel. Es macht spielerisch viel mehr Sinn, wenn der Maurer aus Zement\n     und Stein (oder Ziegeln) erst \"Mauer-Pakete\" (deine Wand-Blöcke) herstellt, die der Builder dann verbaut.",
+      "featureId": "e55ce2ee-3836-424e-89c2-c30e73b9ab27",
+      "type": "plan",
+      "urgency": "medium",
+      "status": "open",
+      "createdAt": "2025-12-23T19:44:32.926Z",
+      "updatedAt": "2025-12-23T19:44:32.926Z",
+      "closedAt": null
+    }
+  ],
+  "lastUpdate": "2025-12-23T19:44:32.926Z"
+}
