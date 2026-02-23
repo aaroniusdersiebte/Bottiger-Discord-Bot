@@ -654,7 +654,23 @@
         "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1475108687457681533",
         "error": null
       }
+    },
+    {
+      "id": "1771766512729",
+      "status": "completed",
+      "featureKey": "wolpertinger-customizen",
+      "data": {
+        "title": "📄 Doku aktualisiert: Wolpertinger Customizen",
+        "content": "**Doku aktualisiert:** Wolpertinger Customizen\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1457070531042873416/1457070533404393604)"
+      },
+      "createdAt": "2026-02-22T13:21:52.729Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1475120437624049788",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1475120437624049788",
+        "error": null
+      }
     }
   ],
-  "lastUpdate": "2026-02-22T12:35:18.918Z"
+  "lastUpdate": "2026-02-22T13:21:59.017Z"
 }

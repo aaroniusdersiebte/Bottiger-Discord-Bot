@@ -59,7 +59,7 @@
     }
   },
   "overviewBotMessageId": "1466046266239619228",
-  "lastSync": "2026-02-22T12:35:11.769Z",
+  "lastSync": "2026-02-22T13:40:47.918Z",
   "fileHashes": {
     "Badges.md": "c1e81538ecdba1bea13f82c544d450a71f877768f92c64734a653d73721cb92d",
     "bingo.md": "8a19b6d6eee1514da9fa551e7ed8bff4267af90c2fd39fdd25fba78b493faa50",
@@ -73,11 +73,11 @@
     "quiz.md": "efe98af11eb9cefd63bcaa6fec1d5c20c41a53153b5a4dac0dcf3f5fe15407d0",
     "sound.md": "cadebf275623967577601611f8e8721457ea7354432bb854ef329d419873dcbd",
     "survival_mini_game.md": "88403ea000c7d90b7ebed13c8f77b24e412edc322cf0ab2b70538a0222db8970",
-    "tts.md": "f04a56bcbb517950131cea3298fa6bf3a14f2f1e7997cb80d928752461c8b193",
+    "tts.md": "cb46bdeb8ac0c732af7fa9731b6beab7482f62430076ae5d4c6029f83f5d8792",
     "Umfrage.md": "71e91613ebb29ca0a7d576948af6f1065cf5bce1f9e8d829e630667352a6897e",
     "wette.md": "bde2b11b63aab1befdd8b72e5e2d887467be0557d183163402cea73a6339c0be",
     "WolperReset.md": "07ca7a3724192d2fd165231d842dda5ed1a9d01690b12edb214c157495c5a245",
-    "wolpertinger-customizen.md": "467ea3175d441f4b53bae95d216384c17044a202a6ead7009dbb2527b62ddc63"
+    "wolpertinger-customizen.md": "c7131e955bb739f9b7e0cdf7a55496d046e33e5a72deb94ec3cb3917e12c6e43"
   },
-  "lastHashCheck": "2026-02-22T12:35:11.773Z"
+  "lastHashCheck": "2026-02-22T13:40:58.439Z"
 }

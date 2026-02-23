@@ -22,7 +22,7 @@ ehthumbs.db
 # Environment variables
 .env
 ehthumbs_vista.db
-
+.claude/
 # Dump file
 *.stackdump
 node_modules
@@ -42,7 +42,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-.env.example
+
 .env
 features/
 images/

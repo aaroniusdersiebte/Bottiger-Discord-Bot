@@ -23,6 +23,8 @@ const BingoService = require('./services/BingoService');
 const BingoImageGenerator = require('./services/BingoImageGenerator');
 const AssetSyncService = require('./services/AssetSyncService');
 const MemeSyncService = require('./services/MemeSyncService');
+const AccountLinkService = require('./services/AccountLinkService');
+const SSPGameManager = require('./services/SSPGameManager');
 
 // ========== BOT INITIALISIERUNG ==========
 
@@ -79,6 +81,12 @@ client.assetSyncService = new AssetSyncService(client, config);
 
 // MemeSyncService initialisieren (Meme-Channel-Sync)
 client.memeSyncService = new MemeSyncService(client, config);
+
+// AccountLinkService initialisieren (Discord↔Twitch Verknüpfung)
+client.accountLinkService = new AccountLinkService(config);
+
+// SSPGameManager initialisieren (Schere-Stein-Papier)
+client.sspGameManager = new SSPGameManager(client, config, client.accountLinkService);
 
 // Reaction-Handler registrieren (für Live Vote-Sync)
 const reactionHandler = require('./events/reactionHandler');
@@ -182,6 +190,13 @@ client.once('ready', async () => {
 
 // Interaction Handler
 client.on('interactionCreate', async interaction => {
+  // SSP Button & Select-Menu Interactions
+  if ((interaction.isButton() || interaction.isStringSelectMenu()) &&
+      interaction.customId.startsWith('ssp_')) {
+    await handleSSPInteraction(interaction, client);
+    return;
+  }
+
   // Bingo Select-Menu Interactions
   if (interaction.isStringSelectMenu() && interaction.customId === 'bingo_mark_event') {
     await handleBingoSelectMenu(interaction, client);
@@ -331,6 +346,53 @@ async function handleBingoSelectMenu(interaction, client) {
     } catch (e) {
       // Ignore
     }
+  }
+}
+
+// ========== SSP INTERACTION HANDLER ==========
+
+async function handleSSPInteraction(interaction, client) {
+  const gm = client.sspGameManager;
+  const id = interaction.customId;
+
+  try {
+    // Waffenwahl Challenger: ssp_wc_${gameId}
+    if (interaction.isStringSelectMenu() && id.startsWith('ssp_wc_')) {
+      const gameId = id.slice('ssp_wc_'.length);
+      return await gm.handleChallengerWeapon(interaction, gameId, interaction.values[0]);
+    }
+
+    // Punkte-Einsatz: ssp_pts_${gameId}
+    if (interaction.isStringSelectMenu() && id.startsWith('ssp_pts_')) {
+      const gameId = id.slice('ssp_pts_'.length);
+      return await gm.handlePointsSelect(interaction, gameId, interaction.values[0]);
+    }
+
+    // Waffenwahl Akzeptierender: ssp_wd_${gameId} — VOR ssp_confirm prüfen da kein Konflikt, aber Konsistenz
+    if (interaction.isStringSelectMenu() && id.startsWith('ssp_wd_')) {
+      const gameId = id.slice('ssp_wd_'.length);
+      return await gm.handleChallengedWeapon(interaction, gameId, interaction.values[0]);
+    }
+
+    // Confirm (Challenge posten): ssp_confirm_${gameId}
+    if (interaction.isButton() && id.startsWith('ssp_confirm_')) {
+      const gameId = id.slice('ssp_confirm_'.length);
+      return await gm.handleConfirm(interaction, gameId);
+    }
+
+    // Accept (offene Challenge annehmen): ssp_accept_${gameId}
+    if (interaction.isButton() && id.startsWith('ssp_accept_')) {
+      const gameId = id.slice('ssp_accept_'.length);
+      return await gm.handleAccept(interaction, gameId);
+    }
+
+  } catch (err) {
+    console.error('[SSP] Interaction-Fehler:', err);
+    try {
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: '❌ Ein Fehler ist aufgetreten.', ephemeral: true });
+      }
+    } catch { /* ignore */ }
   }
 }
 

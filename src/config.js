@@ -6,6 +6,8 @@
 
 require('dotenv').config();
 
+const path = require('path');
+
 module.exports = {
   // Discord
   discord: {
@@ -25,7 +27,16 @@ module.exports = {
     visualizer: process.env.VISUALIZER_PATH || 'C:\\Streaming\\Code\\visual',
     usersJson: process.env.USERS_JSON_PATH || 'C:\\Streaming\\Code\\visual\\config\\users.json',
     assets: process.env.ASSETS_PATH || 'C:\\Streaming\\Code\\visual\\assets\\tts-characters',
-    pendingVerifications: process.env.PENDING_VERIFICATIONS_PATH || 'C:\\Streaming\\Code\\visual\\config\\pending-verifications.json'
+    pendingVerifications: process.env.PENDING_VERIFICATIONS_PATH || 'C:\\Streaming\\Code\\visual\\config\\pending-verifications.json',
+    // Discord-spezifische Dateien (im discord-Projekt selbst)
+    discordLinks: process.env.DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/discord-links.json'),
+    discordUsers: process.env.DISCORD_USERS_PATH || path.resolve(__dirname, '../config/discord-users.json'),
+    pendingDiscordLinks: process.env.PENDING_DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/pending-discord-links.json')
+  },
+
+  // SSP Battle-System
+  ssp: {
+    battleChannelId: process.env.BATTLE_CHANNEL_ID || null
   },
 
   // Bot-Settings
