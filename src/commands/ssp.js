@@ -20,13 +20,20 @@ module.exports = {
     const als = client.accountLinkService;
     const userId = interaction.user.id;
 
+    let oldGameNote = '';
     if (gm.hasActiveGame(userId)) {
-      return interaction.reply({ content: '❌ Du hast bereits ein aktives Spiel!', ephemeral: true });
+      const oldState = gm.cancelActiveGame(userId);
+      if (oldState === 'posted') {
+        oldGameNote = '⚠️ Dein altes Spiel (offene Herausforderung) wurde gelöscht.\n\n';
+      } else {
+        oldGameNote = '⚠️ Dein altes Spiel wurde gelöscht.\n\n';
+      }
     }
 
     const isLinked = als.isLinked(userId);
     const game = gm.createGame(userId, interaction.user.displayName, isLinked);
     const reply = gm.buildConfigMessage(game.id, isLinked);
+    reply.content = oldGameNote + reply.content;
 
     await interaction.reply({ ...reply, ephemeral: true });
   }

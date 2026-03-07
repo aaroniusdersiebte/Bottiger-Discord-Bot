@@ -670,7 +670,54 @@
         "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1475120437624049788",
         "error": null
       }
+    },
+    {
+      "id": "1771865003792",
+      "status": "completed",
+      "featureKey": "ssp",
+      "data": {
+        "title": "📄 Neue Doku: SSP",
+        "content": "**Neue Doku:** SSP\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046781451276473/1475533499355369542)"
+      },
+      "createdAt": "2026-02-23T16:43:23.792Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1475533542392860812",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1475533542392860812",
+        "error": null
+      }
+    },
+    {
+      "id": "1772128146588",
+      "status": "completed",
+      "data": {
+        "title": "😂 Neue Memes",
+        "content": "Neue Memes: **sadmario**\n\n[Zum Channel](https://discord.com/channels/230355393170243584/1466054897207349404)"
+      },
+      "createdAt": "2026-02-26T17:49:06.588Z",
+      "source": "meme-sync",
+      "result": {
+        "messageId": "1476637248333025372",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1476637248333025372",
+        "error": null
+      }
+    },
+    {
+      "id": "1772182221654",
+      "status": "completed",
+      "featureKey": "clips",
+      "data": {
+        "title": "📄 Doku aktualisiert: Clip",
+        "content": "**Doku aktualisiert:** Clip\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1457070524613132301/1459877622032109674)"
+      },
+      "createdAt": "2026-02-27T08:50:21.654Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1476864040079851520",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1476864040079851520",
+        "error": null
+      }
     }
   ],
-  "lastUpdate": "2026-02-22T13:21:59.017Z"
+  "lastUpdate": "2026-02-27T08:50:26.980Z"
 }

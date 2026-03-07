@@ -46,6 +46,23 @@ class SSPGameManager {
     return this.userGames.has(userId);
   }
 
+  // Cancelt das aktive Spiel eines Users. Gibt den State des alten Spiels zurück.
+  cancelActiveGame(userId) {
+    const gameId = this.userGames.get(userId);
+    if (!gameId) return null;
+    const game = this.games.get(gameId);
+    if (!game) return null;
+    const oldState = game.state;
+
+    // Challenge-Message aus dem Channel entfernen (falls gepostet)
+    if (game.state === 'posted' && game.challengeMessage) {
+      game.challengeMessage.delete().catch(() => {});
+    }
+
+    this._cleanupGame(gameId);
+    return oldState;
+  }
+
   createGame(challengerId, challengerName, isLinked) {
     const gameId = `${Date.now()}_${++this._counter}`;
     const game = {
@@ -226,9 +243,14 @@ class SSPGameManager {
       return interaction.reply({ content: '❌ Du kannst nicht deine eigene Herausforderung annehmen.', ephemeral: true });
     }
 
-    // Bereits im Spiel?
+    // Bereits im Spiel? → nur blocken wenn schon als Akzeptierender in laufender Runde
     if (this.userGames.has(userId)) {
-      return interaction.reply({ content: '❌ Du bist bereits in einem aktiven Spiel.', ephemeral: true });
+      const existingGame = this.games.get(this.userGames.get(userId));
+      if (existingGame && existingGame.state === 'accepted' && existingGame.challengedId === userId) {
+        return interaction.reply({ content: '❌ Du kämpfst bereits in einem laufenden Spiel – wähle erst deine Waffe!', ephemeral: true });
+      }
+      // Altes Spiel (configuring/posted) canceln
+      this.cancelActiveGame(userId);
     }
 
     // Punkte-Checks

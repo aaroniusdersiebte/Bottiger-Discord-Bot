@@ -25,6 +25,7 @@ const AssetSyncService = require('./services/AssetSyncService');
 const MemeSyncService = require('./services/MemeSyncService');
 const AccountLinkService = require('./services/AccountLinkService');
 const SSPGameManager = require('./services/SSPGameManager');
+const BadWordAlertPoller = require('./services/BadWordAlertPoller');
 
 // ========== BOT INITIALISIERUNG ==========
 
@@ -87,6 +88,9 @@ client.accountLinkService = new AccountLinkService(config);
 
 // SSPGameManager initialisieren (Schere-Stein-Papier)
 client.sspGameManager = new SSPGameManager(client, config, client.accountLinkService);
+
+// BadWordAlertPoller initialisieren (pollt Visual API auf blockierte Nachrichten)
+const badWordAlertPoller = new BadWordAlertPoller(client, config);
 
 // Reaction-Handler registrieren (für Live Vote-Sync)
 const reactionHandler = require('./events/reactionHandler');
@@ -185,6 +189,9 @@ client.once('ready', async () => {
   console.log('[Bot] Starte MemeSync Polling...');
   client.memeSyncService.start();
 
+  // BadWordAlertPoller starten
+  badWordAlertPoller.start();
+
   console.log('\n[Bot] 🚀 Bot läuft und ist bereit!\n');
 });
 
@@ -278,6 +285,7 @@ process.on('SIGINT', async () => {
   if (client.memeSyncService) {
     client.memeSyncService.stop();
   }
+  badWordAlertPoller.stop();
   await client.destroy();
   console.log('[Bot] ✅ Bot gestoppt');
   process.exit(0);

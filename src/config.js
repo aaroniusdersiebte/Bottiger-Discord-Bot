@@ -39,6 +39,11 @@ module.exports = {
     battleChannelId: process.env.BATTLE_CHANNEL_ID || null
   },
 
+  // Bad Word Alert (pollt Visual API auf blockierte Nachrichten)
+  badwordAlert: {
+    channelId: process.env.BADWORD_CHANNEL_ID || null
+  },
+
   // Bot-Settings
   bot: {
     logLevel: process.env.LOG_LEVEL || 'info', // 'debug', 'info', 'warn', 'error'

@@ -55,16 +55,17 @@
     "1466046781451276473": {
       "discord_bild": "1466046782776803433",
       "wolpertinger-customizen": "1466047284952301732",
-      "bingo": "1467133634912714875"
+      "bingo": "1467133634912714875",
+      "ssp": "1475533499355369542"
     }
   },
   "overviewBotMessageId": "1466046266239619228",
-  "lastSync": "2026-02-22T13:40:47.918Z",
+  "lastSync": "2026-02-27T08:54:00.079Z",
   "fileHashes": {
     "Badges.md": "c1e81538ecdba1bea13f82c544d450a71f877768f92c64734a653d73721cb92d",
     "bingo.md": "8a19b6d6eee1514da9fa551e7ed8bff4267af90c2fd39fdd25fba78b493faa50",
     "chat-spielt.md": "5e9359f1021d4794ad8b26a69349054ec2963c35cd2ab9ab95322789d7d49ebf",
-    "clips.md": "cb3573ff72a85105515c8e908efb5ab05845277ca5254e45abd097b9ac3bd181",
+    "clips.md": "4c7661849de421087775ca633bc82a2e90eafa543b9ce247eedfcf91cfad7758",
     "discord_bild.md": "79f784dec5fa71c3dd0a458767da5fcdfde0f38e59b996b6140bab6fd10012cf",
     "meme.md": "a20d298752d29f2bf87a4f4949ca66f47bf4b5a072fe4f27867337b007bcc982",
     "minecraft.md": "aa960b1a59bac0ce6286733da70e905c58d59c992a13d0fc8d42b6fd16f34673",
@@ -72,6 +73,7 @@
     "punkte.md": "e8d7990537426facc7c11a1bb0ca48ce55d3715797c7a125565b92c2c8296db3",
     "quiz.md": "efe98af11eb9cefd63bcaa6fec1d5c20c41a53153b5a4dac0dcf3f5fe15407d0",
     "sound.md": "cadebf275623967577601611f8e8721457ea7354432bb854ef329d419873dcbd",
+    "ssp.md": "7be29682670e2cb818aaf9abdac8a593359c71f20c6a81709bb8b6bb71278551",
     "survival_mini_game.md": "88403ea000c7d90b7ebed13c8f77b24e412edc322cf0ab2b70538a0222db8970",
     "tts.md": "cb46bdeb8ac0c732af7fa9731b6beab7482f62430076ae5d4c6029f83f5d8792",
     "Umfrage.md": "71e91613ebb29ca0a7d576948af6f1065cf5bce1f9e8d829e630667352a6897e",
@@ -79,5 +81,5 @@
     "WolperReset.md": "07ca7a3724192d2fd165231d842dda5ed1a9d01690b12edb214c157495c5a245",
     "wolpertinger-customizen.md": "c7131e955bb739f9b7e0cdf7a55496d046e33e5a72deb94ec3cb3917e12c6e43"
   },
-  "lastHashCheck": "2026-02-22T13:40:58.439Z"
+  "lastHashCheck": "2026-02-27T08:54:06.615Z"
 }
