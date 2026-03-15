@@ -2,20 +2,24 @@
   "summaryMessageId": "1482650990703284385",
   "fixes": [
     {
-      "text": "Queue anpassen damit längerer cooldown configurierbar ist",
-      "completedAt": 1773562057303
+      "text": "Discord bild fix",
+      "completedAt": 1773563146378
     },
     {
-      "text": "Bot reagiert auf YT auf Points abfrage, antwortet aber nur auf Twitch",
-      "completedAt": 1773562033940
+      "text": "Discord Bot reagiert nicht auf nachrichten / bilder die gesendet wurden wenn er ofline ist",
+      "completedAt": 1773563092562
     },
     {
-      "text": "Bot reagiert auf Twitch 2 mal mit ner Point antwort wobei die 2te unterschiedliche Antworten enthält die nicht stimmen",
-      "completedAt": 1773562018543
+      "text": "Jump Links in erneuerungen funktionieren nicht mehr",
+      "completedAt": 1773563089630
     },
     {
-      "text": "test",
-      "completedAt": 1773561941442
+      "text": "Anpassung der Twitch Beschreibung zum enthalten der Befehlsliste",
+      "completedAt": 1773563085837
+    },
+    {
+      "text": "test 2",
+      "completedAt": 1773562876638
     }
   ]
 }

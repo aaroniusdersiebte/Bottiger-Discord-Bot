@@ -8,7 +8,7 @@
  * - Erweiterbar für weitere Commands
  */
 
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
@@ -43,7 +43,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,          // Für Message-Zugriff bei Reactions
     GatewayIntentBits.MessageContent          // Für Attachments (UserImage-Feature)
   ],
-  partials: ['MESSAGE', 'REACTION']           // Für Reactions auf ältere Nachrichten
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction] // Für Reactions auf ältere Nachrichten
 });
 
 // Commands Collection

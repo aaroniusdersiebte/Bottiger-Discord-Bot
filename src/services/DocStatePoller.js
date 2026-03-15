@@ -286,18 +286,25 @@ class DocStatePoller {
   _buildJumpLink(featureKey) {
     try {
       const docsService = this.client.docsService;
-      if (!docsService || !docsService.state) return null;
+      if (!docsService?.state) return null;
 
-      const { threadMessages, threadIds } = docsService.state;
+      const { threadMessages, forumPostIds } = docsService.state;
+      const guildId = this.client.config?.discord?.guildId
+        || this.client.guilds.cache.first()?.id;
+      if (!guildId) return null;
 
-      // Suche in allen Threads nach der Message
+      // Aktive Threads (aus forumPostIds) bevorzugen
+      const activeThreadIds = new Set(Object.values(forumPostIds || {}));
+      for (const threadId of activeThreadIds) {
+        if (threadMessages[threadId]?.[featureKey]) {
+          return `https://discord.com/channels/${guildId}/${threadId}/${threadMessages[threadId][featureKey]}`;
+        }
+      }
+
+      // Fallback: alle Threads durchsuchen
       for (const [threadId, messages] of Object.entries(threadMessages)) {
         if (messages[featureKey]) {
-          const messageId = messages[featureKey];
-          const guild = this.client.guilds.cache.first();
-          if (guild) {
-            return `https://discord.com/channels/${guild.id}/${threadId}/${messageId}`;
-          }
+          return `https://discord.com/channels/${guildId}/${threadId}/${messages[featureKey]}`;
         }
       }
 
