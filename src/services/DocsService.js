@@ -832,9 +832,6 @@ class DocsService {
   _convertMarkdownToDiscord(markdown) {
     let result = markdown;
 
-    // $-Marker entfernen
-    result = result.replace(/^\$ /gm, '');
-
     // Überschriften zu fett konvertieren
     result = result.replace(/^### (.*$)/gim, '**$1**');
     result = result.replace(/^## (.*$)/gim, '**$1**');
@@ -873,42 +870,38 @@ class DocsService {
    */
   generateStreamSummary() {
     const docs = this.loadFeatureDocs();
-
     const commands = docs.filter(doc => doc.frontmatter.type === 'command');
+    if (commands.length === 0) return 'Keine Commands gefunden.';
 
-    if (commands.length === 0) {
-      return 'Keine Commands gefunden.';
-    }
+    commands.sort((a, b) => (parseInt(a.frontmatter.order) || 999) - (parseInt(b.frontmatter.order) || 999));
 
-    commands.sort((a, b) => {
-      const orderA = parseInt(a.frontmatter.order) || 999;
-      const orderB = parseInt(b.frontmatter.order) || 999;
-      return orderA - orderB;
-    });
+    const paid = commands.filter(doc => doc.frontmatter.group === 'paid');
+    const free = commands.filter(doc => doc.frontmatter.group === 'free');
+    const sep = '──────────────────────────────';
+    const lines = [];
 
-    const entries = [];
-
-    for (const doc of commands) {
-      const { frontmatter, content } = doc;
-
-      const dollarLines = content.split('\n')
-        .filter(line => line.startsWith('$ '))
-        .map(line => {
-          let text = line.slice(2);
-          text = text.replace(/`([^`]+)`/g, '"$1"');
-          return text;
-        });
-
-      let entry = `${frontmatter.emoji} ${frontmatter.title}\n`;
-
-      if (dollarLines.length > 0) {
-        entry += '\n' + dollarLines.join('\n');
+    if (paid.length > 0) {
+      lines.push('🛠️ STREAM-INTERAKTION (POINTS)');
+      lines.push(sep);
+      for (const doc of paid) {
+        const { emoji, usage, cost, summary } = doc.frontmatter;
+        lines.push(`${emoji} ${usage} | ${cost} | ${summary}`);
+        lines.push(sep);
       }
-
-      entries.push(entry);
     }
 
-    return entries.join('\n\n━━━━━━━━━━━━━━\n\n');
+    if (free.length > 0) {
+      if (paid.length > 0) lines.push('');
+      lines.push('✨ KOSTENLOSE COMMANDS');
+      lines.push(sep);
+      for (const doc of free) {
+        const { emoji, usage, summary } = doc.frontmatter;
+        lines.push(`${emoji} ${usage} | ${summary}`);
+        lines.push(sep);
+      }
+    }
+
+    return lines.join('\n');
   }
 
   /**

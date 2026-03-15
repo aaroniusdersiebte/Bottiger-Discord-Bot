@@ -4,6 +4,10 @@ emoji: 💬
 category: "!Befehle"
 type: command
 order: 1
+group: paid
+cost: "20 Pkt"
+usage: "!befehl [parameter]"
+summary: "Kurzbeschreibung fürs Stream-Summary"
 image: optional-bild.png
 ---
 

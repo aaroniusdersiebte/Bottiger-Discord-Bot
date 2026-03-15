@@ -765,7 +765,199 @@
         "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482090297000464524",
         "error": null
       }
+    },
+    {
+      "id": "1773563295086",
+      "status": "completed",
+      "featureKey": "survival_mini_game",
+      "data": {
+        "title": "📄 Doku aktualisiert: Survival Mini Game",
+        "content": "**Doku aktualisiert:** Survival Mini Game\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046260929892394/1466736301561876562)"
+      },
+      "createdAt": "2026-03-15T08:28:15.086Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482656695334207570",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482656695334207570",
+        "error": null
+      }
+    },
+    {
+      "id": "1773563983071",
+      "status": "completed",
+      "featureKey": "punkte",
+      "data": {
+        "title": "📄 Doku aktualisiert: Punkte",
+        "content": "**Doku aktualisiert:** Punkte\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466734287196782677)"
+      },
+      "createdAt": "2026-03-15T08:39:43.071Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482659589118885982",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482659589118885982",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562677",
+      "status": "completed",
+      "featureKey": "clips",
+      "data": {
+        "title": "📄 Doku aktualisiert: Clip",
+        "content": "**Doku aktualisiert:** Clip\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046250943254529)"
+      },
+      "createdAt": "2026-03-15T10:12:42.678Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682972954951856",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682972954951856",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562679",
+      "status": "completed",
+      "featureKey": "discord_bild",
+      "data": {
+        "title": "📄 Doku aktualisiert: Discord Bild",
+        "content": "**Doku aktualisiert:** Discord Bild\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046258983731253)"
+      },
+      "createdAt": "2026-03-15T10:12:42.679Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682974515232840",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682974515232840",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562682",
+      "status": "completed",
+      "featureKey": "meme",
+      "data": {
+        "title": "📄 Doku aktualisiert: Meme",
+        "content": "**Doku aktualisiert:** Meme\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1467133638176018486)"
+      },
+      "createdAt": "2026-03-15T10:12:42.682Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682975870124114",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682975870124114",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562683",
+      "status": "completed",
+      "featureKey": "Openpoll",
+      "data": {
+        "title": "📄 Doku aktualisiert: Open Poll",
+        "content": "**Doku aktualisiert:** Open Poll\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1472566084883320853)"
+      },
+      "createdAt": "2026-03-15T10:12:42.683Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682977010978828",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682977010978828",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562686",
+      "status": "completed",
+      "featureKey": "quiz",
+      "data": {
+        "title": "📄 Doku aktualisiert: Quiz",
+        "content": "**Doku aktualisiert:** Quiz\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046243284324589)"
+      },
+      "createdAt": "2026-03-15T10:12:42.686Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682978047102977",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682978047102977",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562687",
+      "status": "completed",
+      "featureKey": "sound",
+      "data": {
+        "title": "📄 Doku aktualisiert: Soundeffekte",
+        "content": "**Doku aktualisiert:** Soundeffekte\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046246392434825)"
+      },
+      "createdAt": "2026-03-15T10:12:42.687Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682979489939576",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682979489939576",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562689",
+      "status": "completed",
+      "featureKey": "tts",
+      "data": {
+        "title": "📄 Doku aktualisiert: tts",
+        "content": "**Doku aktualisiert:** tts\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046237521346714)"
+      },
+      "createdAt": "2026-03-15T10:12:42.689Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482682999735849071",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482682999735849071",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562691",
+      "status": "completed",
+      "featureKey": "Umfrage",
+      "data": {
+        "title": "📄 Doku aktualisiert: Umfrage",
+        "content": "**Doku aktualisiert:** Umfrage\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046254021607519)"
+      },
+      "createdAt": "2026-03-15T10:12:42.691Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482683001002528798",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482683001002528798",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562692",
+      "status": "completed",
+      "featureKey": "wette",
+      "data": {
+        "title": "📄 Doku aktualisiert: Wette",
+        "content": "**Doku aktualisiert:** Wette\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1466046248766410844)"
+      },
+      "createdAt": "2026-03-15T10:12:42.692Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482683001908236361",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482683001908236361",
+        "error": null
+      }
+    },
+    {
+      "id": "1773569562694",
+      "status": "completed",
+      "featureKey": "WolperReset",
+      "data": {
+        "title": "📄 Doku aktualisiert: WolperReset",
+        "content": "**Doku aktualisiert:** WolperReset\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1466046235650822175/1472610441044951194)"
+      },
+      "createdAt": "2026-03-15T10:12:42.694Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482683003665907904",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482683003665907904",
+        "error": null
+      }
     }
   ],
-  "lastUpdate": "2026-03-13T18:57:42.961Z"
+  "lastUpdate": "2026-03-15T10:12:54.843Z"
 }
