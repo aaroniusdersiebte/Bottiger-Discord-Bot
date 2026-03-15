@@ -103,6 +103,11 @@ module.exports = {
     allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
   },
 
+  // Bug-Fix Channel (✅ Reaction → löscht Nachricht, aktualisiert Übersicht)
+  bugfixChannel: {
+    channelId: process.env.BUGFIX_CHANNEL_ID || '1482361898291953684'
+  },
+
   // UserImage-Feature (Bilder im Stream anzeigen)
   userImage: {
     enabled: process.env.USER_IMAGE_ENABLED !== 'false',

@@ -717,7 +717,55 @@
         "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1476864040079851520",
         "error": null
       }
+    },
+    {
+      "id": "1773345578433",
+      "status": "completed",
+      "featureKey": "clips",
+      "data": {
+        "title": "📄 Doku aktualisiert: Clip",
+        "content": "**Doku aktualisiert:** Clip\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1457070524613132301/1459877622032109674)"
+      },
+      "createdAt": "2026-03-12T19:59:38.433Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1481743513598038058",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1481743513598038058",
+        "error": null
+      }
+    },
+    {
+      "id": "1773345756150",
+      "status": "completed",
+      "featureKey": "quiz",
+      "data": {
+        "title": "📄 Doku aktualisiert: Quiz",
+        "content": "**Doku aktualisiert:** Quiz\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1457070524613132301/1458825884206239785)"
+      },
+      "createdAt": "2026-03-12T20:02:36.150Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1481744268627279952",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1481744268627279952",
+        "error": null
+      }
+    },
+    {
+      "id": "1773428255806",
+      "status": "completed",
+      "featureKey": "tts",
+      "data": {
+        "title": "📄 Doku aktualisiert: tts",
+        "content": "**Doku aktualisiert:** tts\n\n[Zur Dokumentation](https://discord.com/channels/230355393170243584/1457070524613132301/1457070526806888563)"
+      },
+      "createdAt": "2026-03-13T18:57:35.806Z",
+      "source": "doc-state-poller",
+      "result": {
+        "messageId": "1482090297000464524",
+        "messageUrl": "https://discord.com/channels/230355393170243584/1466040636196126896/1482090297000464524",
+        "error": null
+      }
     }
   ],
-  "lastUpdate": "2026-02-27T08:50:26.980Z"
+  "lastUpdate": "2026-03-13T18:57:42.961Z"
 }

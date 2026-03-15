@@ -26,6 +26,7 @@ const MemeSyncService = require('./services/MemeSyncService');
 const AccountLinkService = require('./services/AccountLinkService');
 const SSPGameManager = require('./services/SSPGameManager');
 const BadWordAlertPoller = require('./services/BadWordAlertPoller');
+const BugFixService = require('./services/BugFixService');
 
 // ========== BOT INITIALISIERUNG ==========
 
@@ -88,6 +89,10 @@ client.accountLinkService = new AccountLinkService(config);
 
 // SSPGameManager initialisieren (Schere-Stein-Papier)
 client.sspGameManager = new SSPGameManager(client, config, client.accountLinkService);
+
+// BugFixService initialisieren
+client.bugFixService = new BugFixService(config);
+client.bugFixService.loadState();
 
 // BadWordAlertPoller initialisieren (pollt Visual API auf blockierte Nachrichten)
 const badWordAlertPoller = new BadWordAlertPoller(client, config);

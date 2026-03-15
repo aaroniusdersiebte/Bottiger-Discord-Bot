@@ -60,26 +60,26 @@
     }
   },
   "overviewBotMessageId": "1466046266239619228",
-  "lastSync": "2026-02-27T08:54:00.079Z",
+  "lastSync": "2026-03-13T18:57:35.802Z",
   "fileHashes": {
     "Badges.md": "c1e81538ecdba1bea13f82c544d450a71f877768f92c64734a653d73721cb92d",
     "bingo.md": "8a19b6d6eee1514da9fa551e7ed8bff4267af90c2fd39fdd25fba78b493faa50",
     "chat-spielt.md": "5e9359f1021d4794ad8b26a69349054ec2963c35cd2ab9ab95322789d7d49ebf",
-    "clips.md": "4c7661849de421087775ca633bc82a2e90eafa543b9ce247eedfcf91cfad7758",
+    "clips.md": "4e92f1a1056a504fdc30c3e3e7bb958e85d41fbb65db5ff56f46d803b6a85864",
     "discord_bild.md": "79f784dec5fa71c3dd0a458767da5fcdfde0f38e59b996b6140bab6fd10012cf",
     "meme.md": "a20d298752d29f2bf87a4f4949ca66f47bf4b5a072fe4f27867337b007bcc982",
     "minecraft.md": "aa960b1a59bac0ce6286733da70e905c58d59c992a13d0fc8d42b6fd16f34673",
     "Openpoll.md": "960df4ee8dab584cc0cc7ffd3813ad1b5e167d133207a4de12bd875657ca4d1d",
     "punkte.md": "e8d7990537426facc7c11a1bb0ca48ce55d3715797c7a125565b92c2c8296db3",
-    "quiz.md": "efe98af11eb9cefd63bcaa6fec1d5c20c41a53153b5a4dac0dcf3f5fe15407d0",
+    "quiz.md": "4ccc8b49814e37f85b3feffaa1e34b33d4f225376a3716aa952b7efc45d7e742",
     "sound.md": "cadebf275623967577601611f8e8721457ea7354432bb854ef329d419873dcbd",
     "ssp.md": "7be29682670e2cb818aaf9abdac8a593359c71f20c6a81709bb8b6bb71278551",
     "survival_mini_game.md": "88403ea000c7d90b7ebed13c8f77b24e412edc322cf0ab2b70538a0222db8970",
-    "tts.md": "cb46bdeb8ac0c732af7fa9731b6beab7482f62430076ae5d4c6029f83f5d8792",
+    "tts.md": "0490c90fbbc6bf9de77bf12f5b544b266a81c5377132a5c76823230f8dc3abd5",
     "Umfrage.md": "71e91613ebb29ca0a7d576948af6f1065cf5bce1f9e8d829e630667352a6897e",
     "wette.md": "bde2b11b63aab1befdd8b72e5e2d887467be0557d183163402cea73a6339c0be",
     "WolperReset.md": "07ca7a3724192d2fd165231d842dda5ed1a9d01690b12edb214c157495c5a245",
     "wolpertinger-customizen.md": "c7131e955bb739f9b7e0cdf7a55496d046e33e5a72deb94ec3cb3917e12c6e43"
   },
-  "lastHashCheck": "2026-02-27T08:54:06.615Z"
+  "lastHashCheck": "2026-03-13T18:57:35.807Z"
 }

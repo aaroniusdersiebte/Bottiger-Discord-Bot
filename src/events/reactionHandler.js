@@ -36,7 +36,12 @@ module.exports = {
         await handleUserImageReaction(reaction, user, client);
       }
 
-      // 2. Custom-Avatar Approval (✅/❌)
+      // 2. Bug-Fix Channel (✅ → Nachricht löschen + Übersicht aktualisieren)
+      if (emoji === '✅' && config.bugfixChannel?.channelId) {
+        await handleBugFixReaction(reaction, user, client);
+      }
+
+      // 3. Custom-Avatar Approval (✅/❌)
       if ((emoji === '✅' || emoji === '❌') && config.customAvatar?.channelId) {
         await handleCustomAvatarReaction(reaction, user, emoji === '✅', client);
       }
@@ -165,6 +170,54 @@ async function handleUserImageReaction(reaction, user, client) {
 
   } catch (err) {
     console.error('[ReactionHandler] Fehler bei UserImage-Reaction:', err);
+  }
+}
+
+/**
+ * Handler für Bug-Fix Channel (✅ → Nachricht löschen + Übersicht aktualisieren)
+ */
+async function handleBugFixReaction(reaction, user, client) {
+  try {
+    const channelId = config.bugfixChannel?.channelId;
+    if (!channelId) return;
+
+    // Korrekter Channel?
+    if (reaction.message.channel.id !== channelId) return;
+
+    let message = reaction.message;
+
+    // Partial fetchen
+    if (message.partial) {
+      try {
+        message = await message.fetch();
+      } catch (err) {
+        console.error('[BugFixService] Konnte Message nicht fetchen:', err);
+        return;
+      }
+    }
+
+    // Bot-Nachrichten und die Übersichts-Nachricht ignorieren
+    if (message.author.bot) return;
+
+    const bugFixService = client.bugFixService;
+    if (!bugFixService) return;
+
+    // Übersichts-Nachricht nicht löschen
+    if (bugFixService.state?.summaryMessageId === message.id) return;
+
+    const fixText = message.content || '(kein Text)';
+    const channel = message.channel;
+
+    // Fix speichern, dann Nachricht löschen
+    bugFixService.addFix(fixText);
+    await message.delete();
+
+    // Übersicht aktualisieren
+    await bugFixService.updateSummaryMessage(channel);
+
+    console.log(`[BugFixService] Fix erledigt: "${fixText.slice(0, 60)}"`);
+  } catch (err) {
+    console.error('[BugFixService] Fehler:', err);
   }
 }
 
