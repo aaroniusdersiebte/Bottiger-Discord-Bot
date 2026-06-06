@@ -2,24 +2,24 @@
   "summaryMessageId": "1482650990703284385",
   "fixes": [
     {
+      "text": "Zappy macht zu viele sounds, wirkt zu aggresiv",
+      "completedAt": 1774603254870
+    },
+    {
+      "text": "MK anzeige für platzierung fixen (zappy)",
+      "completedAt": 1774603114695
+    },
+    {
+      "text": "-Bot Nachricht die fragt ob man schon Abonniert ist, ist falsch geschrieben -> doppel n",
+      "completedAt": 1774601389702
+    },
+    {
+      "text": "yt chat integrieren",
+      "completedAt": 1773774495282
+    },
+    {
       "text": "Discord bild fix",
       "completedAt": 1773563146378
-    },
-    {
-      "text": "Discord Bot reagiert nicht auf nachrichten / bilder die gesendet wurden wenn er ofline ist",
-      "completedAt": 1773563092562
-    },
-    {
-      "text": "Jump Links in erneuerungen funktionieren nicht mehr",
-      "completedAt": 1773563089630
-    },
-    {
-      "text": "Anpassung der Twitch Beschreibung zum enthalten der Befehlsliste",
-      "completedAt": 1773563085837
-    },
-    {
-      "text": "test 2",
-      "completedAt": 1773562876638
     }
   ]
 }
