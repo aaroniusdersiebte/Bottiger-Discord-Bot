@@ -35,6 +35,8 @@ $RECYCLE.BIN/
 config/discord-links.json
 config/discord-users.json
 config/pending-discord-links.json
+config/pending-writes.json
+config/avatar-cooldowns.json
 leaderboard.txt
 
 ### Sonstiger generierter State ###

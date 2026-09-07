@@ -10,9 +10,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const Database = require('better-sqlite3');
 const ModeDetector = require('./ModeDetector');
 const AssetManager = require('./AssetManager');
 const ImageGenerator = require('./ImageGenerator');
+const PendingWriteQueue = require('../utils/pendingWriteQueue');
 
 class UserService {
   constructor(apiClient, config) {
@@ -22,9 +24,58 @@ class UserService {
     this.assetManager = new AssetManager(config.paths.assets);
     this.imageGenerator = new ImageGenerator(config.paths.assets);
 
-    // Cache
-    this.usersCache = null;
-    this.lastUsersLoad = null;
+    // SQLite Verbindung (lazy init bei erstem Zugriff) — IMMER read-only
+    this._db = null;
+
+    // Schreib-Queue für Zappify (wenn App aus ist)
+    this.pendingWrites = new PendingWriteQueue(config.paths.pendingWrites);
+  }
+
+  _getDb() {
+    if (!this._db) {
+      const dbPath = this.config.paths.usersDb;
+      if (!fs.existsSync(dbPath)) {
+        throw new Error(`users.db nicht gefunden: ${dbPath} — wurde Zappify schon einmal gestartet?`);
+      }
+      // NUR lesend. Schreibvorgänge laufen über die API bzw. PendingWriteQueue.
+      // read-only ist WAL-safe: beliebig viele Leser parallel zu Zappifys Writer.
+      this._db = new Database(dbPath, { readonly: true, fileMustExist: true });
+      this._db.pragma('busy_timeout = 5000');
+    }
+    return this._db;
+  }
+
+  _rowToUser(row) {
+    if (!row) return null;
+    return {
+      platform: row.platform || null,
+      userId: row.user_id || null,
+      character: row.character ? JSON.parse(row.character) : null,
+      customAvatar: {
+        enabled: !!row.custom_avatar_enabled,
+        filename: row.custom_avatar_filename || null
+      },
+      stats: {
+        ttsCount: row.tts_count,
+        donationCount: row.donation_count,
+        totalDonated: row.total_donated,
+        subCount: row.sub_count,
+        messageCount: row.message_count,
+        points: row.points,
+        level: row.level,
+        totalXP: row.total_xp,
+        lastLevelUp: row.last_level_up || null,
+        lastChatActivity: row.last_chat_activity || null,
+        lastCharacterReset: row.last_character_reset || null,
+        lastCharacterCustomization: row.last_character_customization || null,
+        monthsSub: row.months_sub,
+        streamsAttended: row.streams_attended,
+        firstWordToday: row.first_word_today || null,
+        roles: row.roles ? JSON.parse(row.roles) : [],
+        firstSeen: row.first_seen,
+        lastSeen: row.last_seen
+      }
+    };
   }
 
   /**
@@ -156,69 +207,43 @@ class UserService {
   // ========== PRIVATE METHODS (STANDALONE-MODE) ==========
 
   /**
-   * Liest User aus users.json
+   * Liest User aus SQLite DB — gibt Default zurück wenn nicht gefunden
    * @private
    */
   _getUserFromFile(username) {
-    const normalizedUsername = username.toLowerCase();
-
-    // Cache-Check (max 30 Sekunden alt)
-    if (this.usersCache && this.lastUsersLoad && Date.now() - this.lastUsersLoad < 30000) {
-      const user = this.usersCache[normalizedUsername];
-      if (user) return user;
-      throw new Error(`User "${username}" nicht gefunden.`);
+    const norm = username.toLowerCase();
+    const db = this._getDb();
+    const row = db.prepare('SELECT * FROM users WHERE username = ?').get(norm);
+    if (!row) {
+      // User noch nicht im Visualizer aktiv — leeres Profil
+      return {
+        platform: null,
+        userId: null,
+        character: null,
+        customAvatar: { enabled: false, filename: null },
+        stats: {
+          ttsCount: 0, donationCount: 0, totalDonated: 0, subCount: 0,
+          messageCount: 0, points: 0, level: 0, totalXP: 0,
+          lastLevelUp: null, lastChatActivity: null, monthsSub: 0,
+          streamsAttended: 0, roles: [], firstSeen: null, lastSeen: null
+        }
+      };
     }
-
-    // Aus Datei lesen
-    if (!fs.existsSync(this.config.paths.usersJson)) {
-      throw new Error('users.json nicht gefunden. Läuft der Visualizer?');
-    }
-
-    try {
-      const usersData = JSON.parse(fs.readFileSync(this.config.paths.usersJson, 'utf8'));
-      this.usersCache = usersData;
-      this.lastUsersLoad = Date.now();
-
-      const user = usersData[normalizedUsername];
-      if (!user) {
-        throw new Error(`User "${username}" nicht gefunden.`);
-      }
-
-      return user;
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        throw new Error('users.json nicht gefunden.');
-      }
-      throw err;
-    }
+    return this._rowToUser(row);
   }
 
   /**
-   * Liest alle User aus users.json
+   * Liest alle User aus SQLite DB (als Object, key = username)
    * @private
    */
   _getAllUsersFromFile() {
-    // Cache-Check (max 30 Sekunden alt)
-    if (this.usersCache && this.lastUsersLoad && Date.now() - this.lastUsersLoad < 30000) {
-      return this.usersCache;
+    const db = this._getDb();
+    const rows = db.prepare('SELECT * FROM users').all();
+    const out = {};
+    for (const row of rows) {
+      out[row.username] = this._rowToUser(row);
     }
-
-    // Aus Datei lesen
-    if (!fs.existsSync(this.config.paths.usersJson)) {
-      throw new Error('users.json nicht gefunden. Läuft der Visualizer?');
-    }
-
-    try {
-      const usersData = JSON.parse(fs.readFileSync(this.config.paths.usersJson, 'utf8'));
-      this.usersCache = usersData;
-      this.lastUsersLoad = Date.now();
-      return usersData;
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        throw new Error('users.json nicht gefunden.');
-      }
-      throw err;
-    }
+    return out;
   }
 
   /**
@@ -330,9 +355,16 @@ class UserService {
    */
   async canUploadCustomAvatar(username) {
     try {
-      const user = await this.getUser(username);
       const cooldownMs = this.config.customAvatar.cooldownDays * 24 * 60 * 60 * 1000;
-      const lastUpload = user.stats?.lastCustomAvatarUpload || 0;
+      // Cooldown wird bot-lokal geführt (Anti-Spam, unabhängig von Zappify).
+      // Fallback: user.stats.lastCustomAvatarUpload (falls Zappify das je liefert).
+      let lastUpload = this._readAvatarCooldown(username);
+      if (!lastUpload) {
+        try {
+          const user = await this.getUser(username);
+          lastUpload = user.stats?.lastCustomAvatarUpload || 0;
+        } catch { /* User unbekannt -> kein Cooldown */ }
+      }
       const timeSinceUpload = Date.now() - lastUpload;
       const remainingTime = Math.max(0, cooldownMs - timeSinceUpload);
 
@@ -511,39 +543,37 @@ class UserService {
   }
 
   /**
-   * Setzt Cooldown für Custom-Avatar Upload
+   * Liest den bot-lokalen Custom-Avatar-Cooldown (epoch ms) für einen User.
+   * @private
+   * @param {string} username
+   * @returns {number} epoch ms des letzten Uploads, 0 wenn keiner
+   */
+  _readAvatarCooldown(username) {
+    try {
+      const data = JSON.parse(fs.readFileSync(this.config.paths.avatarCooldowns, 'utf8'));
+      return data[username.toLowerCase()] || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Setzt den Custom-Avatar-Cooldown bot-lokal (Anti-Spam).
+   * Bewusst NICHT in users.db — der Bot schreibt die DB nie.
    * @private
    * @param {string} username
    */
   _updateCustomAvatarCooldown(username) {
-    const normalizedUsername = username.toLowerCase();
-
-    if (!fs.existsSync(this.config.paths.usersJson)) {
-      console.warn('[UserService] users.json nicht gefunden, Cooldown nicht gesetzt');
-      return;
-    }
-
+    const norm = username.toLowerCase();
+    const p = this.config.paths.avatarCooldowns;
     try {
-      const usersData = JSON.parse(fs.readFileSync(this.config.paths.usersJson, 'utf8'));
-
-      if (!usersData[normalizedUsername]) {
-        console.warn(`[UserService] User ${normalizedUsername} nicht in users.json, Cooldown nicht gesetzt`);
-        return;
-      }
-
-      if (!usersData[normalizedUsername].stats) {
-        usersData[normalizedUsername].stats = {};
-      }
-
-      usersData[normalizedUsername].stats.lastCustomAvatarUpload = Date.now();
-
-      fs.writeFileSync(
-        this.config.paths.usersJson,
-        JSON.stringify(usersData, null, 2),
-        'utf8'
-      );
-
-      console.log(`[UserService] Cooldown für ${normalizedUsername} gesetzt`);
+      let data = {};
+      try { data = JSON.parse(fs.readFileSync(p, 'utf8')) || {}; } catch { /* Neuanlage */ }
+      data[norm] = Date.now();
+      const dir = path.dirname(p);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+      console.log(`[UserService] Custom-Avatar-Cooldown für ${norm} gesetzt (bot-lokal)`);
     } catch (err) {
       console.error('[UserService] Fehler beim Setzen des Cooldowns:', err);
     }

@@ -25,13 +25,17 @@ module.exports = {
   // File-Pfade (für Standalone-Mode, wenn Visualizer aus)
   paths: {
     visualizer: process.env.VISUALIZER_PATH || 'C:\\Streaming\\Code\\visual',
-    usersJson: process.env.USERS_JSON_PATH || 'C:\\Streaming\\Code\\visual\\config\\users.json',
+    usersDb: process.env.USERS_DB_PATH || 'C:\\Streaming\\Code\\visual\\data\\users.db',
     assets: process.env.ASSETS_PATH || 'C:\\Streaming\\Code\\visual\\assets\\tts-characters',
     pendingVerifications: process.env.PENDING_VERIFICATIONS_PATH || 'C:\\Streaming\\Code\\visual\\config\\pending-verifications.json',
     // Discord-spezifische Dateien (im discord-Projekt selbst)
     discordLinks: process.env.DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/discord-links.json'),
     discordUsers: process.env.DISCORD_USERS_PATH || path.resolve(__dirname, '../config/discord-users.json'),
-    pendingDiscordLinks: process.env.PENDING_DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/pending-discord-links.json')
+    pendingDiscordLinks: process.env.PENDING_DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/pending-discord-links.json'),
+    // Schreib-Queue: gepufferte DB-Writes, die Zappify beim Start übernimmt
+    pendingWrites: process.env.PENDING_WRITES_PATH || path.resolve(__dirname, '../config/pending-writes.json'),
+    // Bot-lokaler Custom-Avatar-Cooldown (Anti-Spam, braucht Zappify nicht)
+    avatarCooldowns: process.env.AVATAR_COOLDOWNS_PATH || path.resolve(__dirname, '../config/avatar-cooldowns.json')
   },
 
   // SSP Battle-System

@@ -65,30 +65,27 @@ module.exports = {
     // Discord-Username als Standard-Vorschlag
     const suggestions = [interaction.user.username];
 
-    // Versuche User aus users.json zu laden (Standalone-Mode)
+    // Usernames aus DB laden (Standalone-Mode)
     try {
       const fs = require('fs');
+      const Database = require('better-sqlite3');
       const config = client.userService.config;
 
-      if (fs.existsSync(config.paths.usersJson)) {
-        const usersData = JSON.parse(fs.readFileSync(config.paths.usersJson, 'utf8'));
-        const usernames = Object.keys(usersData);
+      if (fs.existsSync(config.paths.usersDb)) {
+        const db = new Database(config.paths.usersDb, { readonly: true });
+        const rows = db.prepare(
+          'SELECT username FROM users WHERE username LIKE ? LIMIT 24'
+        ).all(`%${focusedValue.toLowerCase()}%`);
+        db.close();
 
-        // Filter basierend auf Eingabe
-        const filtered = usernames
-          .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
-          .slice(0, 24); // Max 25 Optionen (1 ist Discord-Username)
-
-        // Hinzufügen zu Vorschlägen (ohne Duplikate)
-        for (const username of filtered) {
-          if (!suggestions.includes(username)) {
-            suggestions.push(username);
+        for (const row of rows) {
+          if (!suggestions.includes(row.username)) {
+            suggestions.push(row.username);
           }
         }
       }
     } catch (err) {
       console.error('[Wolpertinger] Autocomplete-Fehler:', err);
-      // Fortfahren mit nur Discord-Username
     }
 
     // Max 25 Vorschläge

@@ -12,6 +12,7 @@
 const { generateProgressBar } = require('../utils/ProgressBar');
 const fs = require('fs');
 const path = require('path');
+const Database = require('better-sqlite3');
 
 class LeaderboardService {
   constructor(client, config) {
@@ -61,13 +62,6 @@ class LeaderboardService {
    */
   async updateLeaderboards() {
     try {
-      const mode = await this.client.userService.modeDetector.getCurrentMode();
-
-      if (mode !== 'api') {
-        console.log('[Leaderboard] 🔴 Visualizer aus, Skip Update');
-        return;
-      }
-
       console.log('[Leaderboard] 🔄 Aktualisiere Leaderboards...');
 
       // Nachrichten-Leaderboard
@@ -105,24 +99,46 @@ class LeaderboardService {
    * @returns {Array} Sortierte User mit { username, platform, value }
    */
   async _fetchAndSortUsers(sortBy) {
+    const excludedUsers = this.config.bot.leaderboardExcludedUsers || [];
+
     try {
-      const allUsers = await this.client.userService.getAllUsers();
-      const excludedUsers = this.config.bot.leaderboardExcludedUsers || [];
+      const mode = await this.client.userService.modeDetector.getCurrentMode();
 
-      // In Array umwandeln, filtern und sortieren
-      const userArray = Object.entries(allUsers)
-        .filter(([username]) => !excludedUsers.includes(username.toLowerCase()))
-        .map(([username, data]) => ({
-          username,
-          platform: data.platform || 'twitch',
-          value: data.stats?.[sortBy] || 0
-        }));
+      if (mode === 'api') {
+        // API-Mode: über UserService
+        const allUsers = await this.client.userService.getAllUsers();
+        return Object.entries(allUsers)
+          .filter(([username]) => !excludedUsers.includes(username.toLowerCase()))
+          .map(([username, data]) => ({
+            username,
+            platform: data.platform || 'twitch',
+            value: data.stats?.[sortBy] || 0
+          }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 15);
+      }
 
-      // Sortieren (höchster Wert zuerst)
-      userArray.sort((a, b) => b.value - a.value);
+      // Standalone-Mode: direkt aus DB (effizienter — kein Laden aller User)
+      const dbPath = this.config.paths.usersDb;
+      if (!fs.existsSync(dbPath)) {
+        console.warn('[Leaderboard] ⚠️ DB nicht gefunden:', dbPath);
+        return null;
+      }
 
-      // Top 15 zurückgeben
-      return userArray.slice(0, 15);
+      const dbCol = sortBy === 'points' ? 'points' : 'message_count';
+      const db = new Database(dbPath, { readonly: true });
+      db.pragma('busy_timeout = 3000');
+
+      const rows = db.prepare(
+        `SELECT username, platform, ${dbCol} as value FROM users ORDER BY ${dbCol} DESC LIMIT 25`
+      ).all();
+      db.close();
+
+      return rows
+        .filter(r => !excludedUsers.includes(r.username.toLowerCase()))
+        .slice(0, 15)
+        .map(r => ({ username: r.username, platform: r.platform || 'twitch', value: r.value || 0 }));
+
     } catch (err) {
       console.error(`[Leaderboard] ❌ Fehler beim Laden der User (${sortBy}):`, err);
       return null;

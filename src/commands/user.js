@@ -5,7 +5,7 @@
  * - /user info - Stats und Wolpertinger anzeigen
  */
 
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -38,23 +38,22 @@ module.exports = {
     // Discord-Username als Standard-Vorschlag
     const suggestions = [interaction.user.username];
 
-    // Versuche User aus users.json zu laden
+    // Usernames aus DB laden
     try {
       const fs = require('fs');
+      const Database = require('better-sqlite3');
       const config = client.userService.config;
 
-      if (fs.existsSync(config.paths.usersJson)) {
-        const usersData = JSON.parse(fs.readFileSync(config.paths.usersJson, 'utf8'));
-        const usernames = Object.keys(usersData);
+      if (fs.existsSync(config.paths.usersDb)) {
+        const db = new Database(config.paths.usersDb, { readonly: true });
+        const rows = db.prepare(
+          'SELECT username FROM users WHERE username LIKE ? LIMIT 24'
+        ).all(`%${focusedValue.toLowerCase()}%`);
+        db.close();
 
-        // Filter basierend auf Eingabe
-        const filtered = usernames
-          .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
-          .slice(0, 24);
-
-        for (const username of filtered) {
-          if (!suggestions.includes(username)) {
-            suggestions.push(username);
+        for (const row of rows) {
+          if (!suggestions.includes(row.username)) {
+            suggestions.push(row.username);
           }
         }
       }
@@ -86,14 +85,21 @@ async function handleInfo(interaction, client) {
     // Punkte formatieren (mit Tausender-Trennzeichen)
     const formatNumber = (num) => num.toLocaleString('de-DE');
 
-    // Stats formatieren
-    let info = `**User: ${username}**\n\n`;
-    info += `**Stats:**\n`;
-    info += `• Punkte: ${formatNumber(userData.stats.points || 0)}\n`;
-    info += `• Donations: ${(userData.stats.totalDonated || 0).toFixed(2)}€\n`;
-    info += `• Messages: ${formatNumber(userData.stats.messageCount || 0)}\n`;
-    info += `• Level: ${userData.stats.level || 1}\n`;
-    info += `• Monate Sub: ${userData.stats.monthsSub || 0}\n`;
+    const stats = userData.stats || {};
+
+    const embed = new EmbedBuilder()
+      .setColor(0x9B59B6)
+      .setTitle(`👤 ${username}`)
+      // Datenschutz: keine Spendenbeträge/Geld-Daten im Discord (auch nicht ephemeral)
+      .addFields(
+        { name: '💰 Punkte', value: formatNumber(stats.points || 0), inline: true },
+        { name: '⭐ Level', value: `${stats.level || 1}`, inline: true },
+        { name: '🧬 Total XP', value: formatNumber(stats.totalXP || 0), inline: true },
+        { name: '💬 Messages', value: formatNumber(stats.messageCount || 0), inline: true },
+        { name: '🎗️ Monate Sub', value: `${stats.monthsSub || 0}`, inline: true }
+      )
+      .setTimestamp()
+      .setFooter({ text: `Angefragt von ${interaction.user.username}` });
 
     // Charakter-Bild generieren
     let characterImage = null;
@@ -107,16 +113,12 @@ async function handleInfo(interaction, client) {
       console.error('[User] Charakter-Bild-Generierung fehlgeschlagen:', err);
     }
 
-    const replyOptions = {
-      content: info,
-      files: []
-    };
+    const replyOptions = { embeds: [embed], files: [] };
 
     if (characterImage) {
-      replyOptions.files.push({
-        attachment: characterImage,
-        name: `${username}-wolpertinger.png`
-      });
+      const fileName = `${username}-wolpertinger.png`;
+      replyOptions.files.push({ attachment: characterImage, name: fileName });
+      embed.setImage(`attachment://${fileName}`);
     }
 
     await interaction.editReply(replyOptions);
