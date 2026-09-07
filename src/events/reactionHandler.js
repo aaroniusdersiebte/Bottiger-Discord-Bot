@@ -9,6 +9,11 @@
 const { Events } = require('discord.js');
 const config = require('../config');
 
+// Rate-Limit fürs UserImage-Feature: pro Bild-Autor max. 1 Freigabe / Fenster.
+// In-Memory (Bot-Neustart setzt zurück — für ein moderiertes Feature ok).
+const USER_IMAGE_COOLDOWN_MS = 60 * 1000;
+const _userImageLastSent = new Map();
+
 module.exports = {
   /**
    * Registriert Event-Listener
@@ -146,6 +151,15 @@ async function handleUserImageReaction(reaction, user, client) {
     // Bild an Visualizer senden
     const username = message.author.username;
     const imageUrl = attachment.url;
+
+    // Rate-Limit pro Bild-Autor
+    const last = _userImageLastSent.get(message.author.id) || 0;
+    if (Date.now() - last < USER_IMAGE_COOLDOWN_MS) {
+      console.log(`[ReactionHandler] ⏳ Rate-Limit: Bild von ${username} zu kurz nach dem letzten — ignoriert`);
+      try { await message.react('⏳'); } catch { /* noop */ }
+      return;
+    }
+    _userImageLastSent.set(message.author.id, Date.now());
 
     console.log(`[ReactionHandler] 📺 Sende Bild von ${username} an Visualizer...`);
     console.log(`[ReactionHandler] Bild-URL: ${imageUrl}`);
