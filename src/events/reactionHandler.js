@@ -36,8 +36,12 @@ module.exports = {
 
       const emoji = reaction.emoji.name;
 
+      // Bild-Freigabe per Emoji nur in den Modi 'emoji' / 'both' (Default 'app' =
+      // Freigabe laeuft im Zappify-Tab, siehe config.imageReview.mode).
+      const emojiApproval = ['emoji', 'both'].includes(config.imageReview?.mode || 'app');
+
       // 1. UserImage-Feature (📺)
-      if (emoji === config.userImage?.triggerEmoji) {
+      if (emojiApproval && emoji === config.userImage?.triggerEmoji) {
         await handleUserImageReaction(reaction, user, client);
       }
 
@@ -46,8 +50,10 @@ module.exports = {
         await handleBugFixReaction(reaction, user, client);
       }
 
-      // 3. Custom-Avatar Approval (✅/❌)
-      if ((emoji === '✅' || emoji === '❌') && config.customAvatar?.channelId) {
+      // 3. Custom-Avatar Approval (✅/❌) - nur im 'emoji'-Modus (in 'both' laufen
+      // Custom-Avatare bewusst ueber die App, siehe wolpertinger.js handleUpload)
+      if ((config.imageReview?.mode || 'app') === 'emoji'
+          && (emoji === '✅' || emoji === '❌') && config.customAvatar?.channelId) {
         await handleCustomAvatarReaction(reaction, user, emoji === '✅', client);
       }
     });

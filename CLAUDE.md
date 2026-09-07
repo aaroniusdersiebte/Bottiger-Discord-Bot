@@ -163,6 +163,25 @@ Discord.js Client wird erweitert mit:
 8. User schreibt `!verify CODE` im Twitch/YouTube Chat
 9. Stream Visualizer liest Code aus `pending-verifications.json` und wendet Customization an
 
+## Bild-Freigabe (Custom-Avatare + Fanart)
+
+`config.imageReview.mode` (env `ZAPPIFY_IMAGE_REVIEW_MODE`, von Zappify beim Spawn gesetzt):
+
+- **`app`** (Default): Der Bot reicht eingereichte Bilder an `POST /api/discord/pending-image`
+  (`ApiClient.submitPendingImage`) — die Freigabe passiert im Zappify-Tab "Discord-Bot".
+  - `/wolpertinger upload` → API-Einreichung, Zappify erzeugt den Verify-Code und gibt ihn zurück.
+  - Fanart: `src/events/fanartForward.js` leitet Bilder aus `config.userImage.channels`
+    automatisch weiter (kein 📺-Mod-Reaktion mehr).
+  - `reactionHandler` registriert die ✅/❌/📺-Handler in diesem Modus **nicht**.
+- **`emoji`**: alter Flow unverändert (Mod reagiert im Discord mit ✅/❌ bzw. 📺).
+- **`both`**: Fanart läuft über beide Wege; Custom-Avatare laufen wie in `app` über die App.
+
+**Rückkanal**: `src/services/AppEventQueueService.js` pollt `config.paths.pendingBotNotifications`
+(`pending-bot-notifications.json`, von Zappify geschrieben) und stellt Freigabe-/Ablehn-DMs zu.
+
+**Command-Übersicht**: Bei Command-Änderungen die Liste in Zappify
+`src/shared/discordBotCommands.js` mitpflegen (wird im Discord-Bot-Tab angezeigt).
+
 ## Discord.js Patterns
 
 **Interaction Types:**

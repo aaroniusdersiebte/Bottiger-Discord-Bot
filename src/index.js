@@ -86,6 +86,14 @@ if (botProfile.isPlayground) {
 const reactionHandler = require('./events/reactionHandler');
 reactionHandler.register(client);
 
+// Fanart-Auto-Weiterleitung an Zappify (Modus app/both) - beide Profile
+const fanartForward = require('./events/fanartForward');
+fanartForward.register(client);
+
+// Rückkanal von Zappify (Bild-Freigabe-DMs) - beide Profile
+const AppEventQueueService = require('./services/AppEventQueueService');
+client.appEventQueue = new AppEventQueueService(client, config);
+
 // ========== COMMAND LOADING ==========
 
 // Im Kunden-Profil sind /docs + /sync-assets reine Aaronius-Produkt-Infra
@@ -168,6 +176,9 @@ client.once('ready', async () => {
   if (client.assetSyncService) client.assetSyncService.start();
   if (client.memeSyncService) client.memeSyncService.start();
   if (badWordAlertPoller) badWordAlertPoller.start();
+
+  // Rückkanal-Poller (Bild-Freigabe-DMs von Zappify)
+  if (client.appEventQueue) client.appEventQueue.start();
 
   setRandomPresence();
   setInterval(setRandomPresence, 15 * 60 * 1000);

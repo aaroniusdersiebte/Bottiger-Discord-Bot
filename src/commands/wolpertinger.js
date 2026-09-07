@@ -366,9 +366,11 @@ async function handleUpload(interaction, client) {
   const username = interaction.options.getString('username');
   const attachment = interaction.options.getAttachment('bild');
   const config = client.config;
+  const reviewMode = config.imageReview?.mode || 'app';
 
-  // Channel konfiguriert?
-  if (!config.customAvatar?.channelId) {
+  // Im 'emoji'-Modus braucht es den Approval-Channel; in 'app'/'both' laeuft die
+  // Freigabe ueber Zappify (keine Channel-Pflicht).
+  if (reviewMode === 'emoji' && !config.customAvatar?.channelId) {
     await interaction.reply({
       content: '❌ Custom-Avatar-Feature ist nicht konfiguriert.',
       ephemeral: true
@@ -424,6 +426,35 @@ async function handleUpload(interaction, client) {
 
     console.log(`[Wolpertinger] Upload: Bild validiert als ${validation.format}`);
 
+    // --- Modus 'app' / 'both': Einreichung an Zappify, Freigabe im Zappify-Tab ---
+    if (reviewMode === 'app' || reviewMode === 'both') {
+      let submit;
+      try {
+        submit = await client.apiClient.submitPendingImage({
+          type: 'custom-avatar',
+          imageUrl: attachment.url,
+          discordUserId: interaction.user.id,
+          discordTag: interaction.user.tag,
+          username: username.toLowerCase(),
+        });
+      } catch (apiErr) {
+        await interaction.editReply({ content: `❌ ${apiErr.message}` });
+        return;
+      }
+      const code = submit?.code;
+      await interaction.editReply({
+        content: `**🎨 Custom-Avatar eingereicht!**\n\n`
+          + (code
+            ? `**Verifizierungs-Code:** \`${code}\`\n\nSobald ein Mod das Bild freigibt, ist dein Avatar aktiv. `
+              + `Falls nicht automatisch verknüpft, schreibe im Twitch/YouTube-Chat:\n\`!verify ${code}\`\n\n`
+            : '')
+          + `📋 Dein Bild wird im Kontrollzentrum geprüft. Du bekommst eine DM, sobald entschieden wurde.`
+      });
+      console.log(`[Wolpertinger] ✅ Custom-Avatar an Zappify eingereicht | User: ${username} | Code: ${code || '-'}`);
+      return;
+    }
+
+    // --- Modus 'emoji': bisheriger Flow (lokale Datei + Mod-Embed) ---
     // 5. Verification erstellen
     const result = await client.userService.createCustomAvatarVerification(
       username,

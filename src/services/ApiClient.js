@@ -131,6 +131,43 @@ class ApiClient {
   }
 
   /**
+   * Reicht ein eingereichtes Bild zur App-seitigen Freigabe ein (Modus app/both).
+   * Zappify sanitisiert das Bild, legt es in die Freigabe-Queue und (bei
+   * custom-avatar ohne Code) erzeugt den Verify-Code.
+   * @param {object} p
+   * @param {'custom-avatar'|'user-image'} p.type
+   * @param {string} [p.imageUrl]
+   * @param {string} [p.discordUserId]
+   * @param {string} [p.discordTag]
+   * @param {string} [p.username] - Stream-Username (falls verknuepft)
+   * @param {string} [p.code]
+   * @param {string} [p.note]
+   * @returns {Promise<{success:boolean, id:string, status:string, code?:string}>}
+   */
+  async submitPendingImage(p) {
+    try {
+      const response = await this.client.post('/api/discord/pending-image', {
+        type: p.type,
+        imageUrl: p.imageUrl,
+        discordUserId: p.discordUserId,
+        discordTag: p.discordTag,
+        username: p.username,
+        code: p.code,
+        note: p.note,
+      });
+      return response.data;
+    } catch (err) {
+      if (err.response && err.response.status === 429) {
+        throw new Error('Zu schnell hintereinander — bitte 60 Sekunden warten.');
+      }
+      if (err.response && err.response.status === 400) {
+        throw new Error(`Ungültige Daten: ${err.response.data?.error || err.message}`);
+      }
+      throw new Error(`Bild konnte nicht eingereicht werden: ${err.message}. Läuft Zappify?`);
+    }
+  }
+
+  /**
    * Health-Check (prüft ob API erreichbar ist)
    * @returns {Promise<boolean>}
    */

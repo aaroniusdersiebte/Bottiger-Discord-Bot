@@ -62,6 +62,21 @@ module.exports = {
     avatarCooldowns: process.env.AVATAR_COOLDOWNS_PATH || path.resolve(__dirname, '../config/avatar-cooldowns.json'),
     // Leaderboard-State liegt im Kunden-Modus im Bot-Ordner (nicht im visual-Repo)
     leaderboardState: process.env.LEADERBOARD_STATE_PATH || path.resolve(__dirname, '../config/leaderboard-state.json'),
+    // Rueckkanal: Zappify schreibt hier Freigabe-/Ablehn-Ereignisse der Bild-Freigabe,
+    // der Bot stellt sie dem Nutzer per DM zu (AppEventQueueService).
+    pendingBotNotifications: process.env.PENDING_BOT_NOTIFICATIONS_PATH
+      || path.resolve(__dirname, '../config/pending-bot-notifications.json'),
+  },
+
+  // Bild-Freigabe-Modus (Zappify uebergibt ZAPPIFY_IMAGE_REVIEW_MODE beim spawn):
+  //  app   = Bot reicht eingereichte Bilder an die Zappify-API, Freigabe im Zappify-Tab
+  //  emoji = alter Flow, ein Mod reagiert im Discord mit ✅/❌ bzw. 📺
+  //  both  = beides (fuer Fanart voll, Custom-Avatare laufen in app/both stets ueber die App)
+  imageReview: {
+    mode: (() => {
+      const m = process.env.ZAPPIFY_IMAGE_REVIEW_MODE;
+      return ['app', 'emoji', 'both'].includes(m) ? m : 'app';
+    })(),
   },
 
   ssp: {
