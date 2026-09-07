@@ -1,87 +1,74 @@
 /**
- * Deploy Commands - Registriert Slash-Commands bei Discord
+ * Deploy Commands - Registriert Slash-Commands bei Discord.
  *
- * Verwendung:
- * npm run deploy
+ * Aufruf:
+ *   node src/deploy-commands.js       (direkt, npm run deploy)
+ *   node src/index.js --deploy        (von Zappify getriggert)
  *
- * Registriert Commands entweder:
- * - Global (alle Server, dauert bis zu 1 Stunde)
- * - Guild-only (ein Server, sofort aktiv - für Testing)
+ * Guild-only wenn DISCORD_GUILD_ID gesetzt (sofort aktiv), sonst global.
  */
 
 const { REST, Routes } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
 const config = require('./config');
+const botProfile = require('./botProfile');
+const commandRegistry = require('./commands/_registry');
 
-// Commands sammeln
-const commands = [];
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+// /docs + /sync-assets sind reine Aaronius-Produkt-Infra
+const CUSTOMER_EXCLUDED = new Set(['docs.js', 'sync-assets.js']);
 
-console.log('[Deploy] Sammle Commands...');
-
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
-
-  if ('data' in command) {
-    commands.push(command.data.toJSON());
-    console.log(`[Deploy] ✅ Command gefunden: /${command.data.name}`);
-  } else {
-    console.warn(`[Deploy] ⚠️ Command ${file} fehlt 'data' Property`);
+/**
+ * Sammelt und registriert alle Commands.
+ * @returns {Promise<number>} Anzahl registrierter Commands
+ */
+async function run() {
+  const commands = [];
+  console.log('[Deploy] Sammle Commands...');
+  for (const { file, command } of commandRegistry) {
+    if (botProfile.isCustomer && CUSTOMER_EXCLUDED.has(file)) continue;
+    if ('data' in command) {
+      commands.push(command.data.toJSON());
+      console.log(`[Deploy] ✅ ${file} -> /${command.data.name}`);
+    } else {
+      console.warn(`[Deploy] ⚠️ ${file} fehlt 'data'`);
+    }
   }
+  console.log(`[Deploy] ${commands.length} Commands gesammelt\n`);
+
+  if (!config.discord.token || !config.discord.clientId) {
+    throw new Error('DISCORD_TOKEN / DISCORD_CLIENT_ID fehlen');
+  }
+
+  const rest = new REST({ version: '10' }).setToken(config.discord.token);
+
+  if (config.discord.guildId) {
+    console.log(`[Deploy] Registriere Guild-Commands (${config.discord.guildId}) - sofort aktiv`);
+    await rest.put(
+      Routes.applicationGuildCommands(config.discord.clientId, config.discord.guildId),
+      { body: commands }
+    );
+    console.log(`[Deploy] ✅ ${commands.length} Guild-Commands registriert`);
+  } else {
+    console.log('[Deploy] Registriere globale Commands (bis zu 1 Stunde bis sichtbar)');
+    await rest.put(
+      Routes.applicationCommands(config.discord.clientId),
+      { body: commands }
+    );
+    console.log(`[Deploy] ✅ ${commands.length} globale Commands registriert`);
+  }
+
+  return commands.length;
 }
 
-console.log(`[Deploy] ${commands.length} Commands gesammelt\n`);
+module.exports = { run };
 
-// REST-Client erstellen
-const rest = new REST({ version: '10' }).setToken(config.discord.token);
-
-// Deployment-Funktion
-(async () => {
-  try {
-    console.log('[Deploy] Starte Deployment...\n');
-
-    // Guild-only oder Global?
-    if (config.discord.guildId) {
-      // Guild-only (schnell, für Testing)
-      console.log(`[Deploy] Registriere Commands für Guild: ${config.discord.guildId}`);
-      console.log('[Deploy] (Guild-Commands sind sofort verfügbar)\n');
-
-      await rest.put(
-        Routes.applicationGuildCommands(config.discord.clientId, config.discord.guildId),
-        { body: commands }
-      );
-
-      console.log(`[Deploy] ✅ ${commands.length} Guild-Commands erfolgreich registriert!`);
-    } else {
-      // Global (langsam, bis zu 1 Stunde)
-      console.log('[Deploy] Registriere Commands global (alle Server)');
-      console.log('[Deploy] ⚠️ Kann bis zu 1 Stunde dauern!\n');
-
-      await rest.put(
-        Routes.applicationCommands(config.discord.clientId),
-        { body: commands }
-      );
-
-      console.log(`[Deploy] ✅ ${commands.length} globale Commands erfolgreich registriert!`);
-      console.log('[Deploy] ⚠️ Commands sind in bis zu 1 Stunde verfügbar.');
-    }
-
-    console.log('\n[Deploy] 🚀 Deployment abgeschlossen!\n');
-
-  } catch (error) {
-    console.error('[Deploy] ❌ Fehler beim Registrieren der Commands:', error);
-
-    if (error.code === 50001) {
-      console.error('[Deploy] ❌ Missing Access: Bot hat keine Berechtigung für diesen Server!');
-    } else if (error.code === 10004) {
-      console.error('[Deploy] ❌ Unknown Guild: Guild-ID ist ungültig!');
-    } else if (error.rawError?.message?.includes('token')) {
-      console.error('[Deploy] ❌ Ungültiger Token! Prüfe DISCORD_TOKEN in .env');
-    }
-
-    process.exit(1);
-  }
-})();
+// Direktaufruf (npm run deploy)
+if (require.main === module) {
+  run()
+    .then(() => { console.log('\n[Deploy] 🚀 Fertig!\n'); process.exit(0); })
+    .catch((error) => {
+      console.error('[Deploy] ❌ Fehler:', error.message || error);
+      if (error.code === 50001) console.error('[Deploy] Missing Access - Bot nicht auf dem Server?');
+      else if (error.code === 10004) console.error('[Deploy] Unknown Guild - DISCORD_GUILD_ID ungültig');
+      process.exit(1);
+    });
+}

@@ -1,0 +1,17 @@
+{
+  "_hinweis": "Nicht-Secret-Einstellungen des Kunden-Bots. Wird vom Zappify-Discord-Bot-Assistenten geschrieben (config/bot-settings.json, gitignored). Der Bot-Token liegt NICHT hier, sondern verschluesselt in Zappify.",
+
+  "leaderboardChannelId": "",
+  "punkteChannelId": "",
+  "leaderboardExcludedUsers": "",
+
+  "userImageEnabled": false,
+  "userImageChannels": "",
+  "userImageModRole": "Discord Master",
+
+  "customAvatarChannelId": "",
+  "battleChannelId": "",
+
+  "featureSsp": true,
+  "featureBingo": true
+}

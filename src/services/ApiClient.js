@@ -146,20 +146,40 @@ class ApiClient {
   /**
    * Generische GET-Anfrage
    * @param {string} url - API-Pfad
+   * @param {object} [axiosConfig] - z.B. { responseType: 'arraybuffer' }
    * @returns {Promise<object>}
    */
-  async get(url) {
-    return await this.client.get(url);
+  async get(url, axiosConfig = undefined) {
+    return await this.client.get(url, axiosConfig);
   }
 
   /**
    * Generische POST-Anfrage
    * @param {string} url - API-Pfad
    * @param {object} data - Request-Body
+   * @param {object} [axiosConfig] - z.B. { responseType: 'arraybuffer' }
    * @returns {Promise<object>}
    */
-  async post(url, data) {
-    return await this.client.post(url, data);
+  async post(url, data, axiosConfig = undefined) {
+    return await this.client.post(url, data, axiosConfig);
+  }
+
+  /**
+   * Username-Vorschlaege fuer die Slash-Command-Autocomplete (ersetzt den
+   * direkten users.db-Zugriff im Kunden-Modus).
+   * @param {string} query
+   * @param {number} [limit=24]
+   * @returns {Promise<string[]>}
+   */
+  async searchUsernames(query, limit = 24) {
+    try {
+      const response = await this.client.get('/api/usernames', {
+        params: { q: query || '', limit },
+      });
+      return Array.isArray(response.data?.usernames) ? response.data.usernames : [];
+    } catch {
+      return [];
+    }
   }
 }
 

@@ -176,8 +176,8 @@ class SSPGameManager {
 
     // Punkte-Check
     if (game.points > 0) {
-      if (!this.als.hasEnoughPoints(game.challengerId, game.points)) {
-        const pts = this.als.getPoints(game.challengerId);
+      if (!(await this.als.hasEnoughPoints(game.challengerId, game.points))) {
+        const pts = await this.als.getPoints(game.challengerId);
         return interaction.reply({
           content: `❌ Nicht genug Punkte! Du hast **${pts}**, Einsatz: **${game.points}**.`,
           ephemeral: true
@@ -261,8 +261,8 @@ class SSPGameManager {
           ephemeral: true
         });
       }
-      if (!this.als.hasEnoughPoints(userId, game.points)) {
-        const pts = this.als.getPoints(userId);
+      if (!(await this.als.hasEnoughPoints(userId, game.points))) {
+        const pts = await this.als.getPoints(userId);
         return interaction.reply({
           content: `❌ Nicht genug Punkte! Du hast **${pts}**, Einsatz: **${game.points}**.`,
           ephemeral: true
@@ -342,7 +342,7 @@ class SSPGameManager {
     }
 
     if (game.points > 0 && winnerId) {
-      transferResult = this.als.transferPoints(winnerId, loserId, game.points);
+      transferResult = await this.als.transferPoints(winnerId, loserId, game.points);
     }
 
     const embed = new EmbedBuilder()

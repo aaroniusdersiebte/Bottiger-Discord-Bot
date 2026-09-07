@@ -6,6 +6,7 @@
  */
 
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildUsernameSuggestions } = require('../utils/usernameSuggestions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -34,39 +35,8 @@ module.exports = {
 
   async autocomplete(interaction, client) {
     const focusedValue = interaction.options.getFocused();
-
-    // Discord-Username als Standard-Vorschlag
-    const suggestions = [interaction.user.username];
-
-    // Usernames aus DB laden
-    try {
-      const fs = require('fs');
-      const Database = require('better-sqlite3');
-      const config = client.userService.config;
-
-      if (fs.existsSync(config.paths.usersDb)) {
-        const db = new Database(config.paths.usersDb, { readonly: true });
-        const rows = db.prepare(
-          'SELECT username FROM users WHERE username LIKE ? LIMIT 24'
-        ).all(`%${focusedValue.toLowerCase()}%`);
-        db.close();
-
-        for (const row of rows) {
-          if (!suggestions.includes(row.username)) {
-            suggestions.push(row.username);
-          }
-        }
-      }
-    } catch (err) {
-      console.error('[User] Autocomplete-Fehler:', err);
-    }
-
-    const results = suggestions.slice(0, 25).map(name => ({
-      name: name,
-      value: name
-    }));
-
-    await interaction.respond(results);
+    const suggestions = await buildUsernameSuggestions(interaction, client, focusedValue);
+    await interaction.respond(suggestions.slice(0, 25).map((name) => ({ name, value: name })));
   }
 };
 

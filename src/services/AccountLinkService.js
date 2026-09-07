@@ -13,22 +13,26 @@
 
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
 const PendingWriteQueue = require('../utils/pendingWriteQueue');
+const botProfile = require('../botProfile');
 
 class AccountLinkService {
-  constructor(config) {
+  constructor(config, apiClient = null) {
     this.config = config;
+    this.apiClient = apiClient;
     this._db = null;
     this.pendingWrites = new PendingWriteQueue(config.paths.pendingWrites);
     this._ensureFiles();
   }
 
   _getDb() {
+    // Kunden-Modus: kein better-sqlite3 - Punkte kommen ueber die API.
+    if (botProfile.isCustomer) return null;
     if (!this._db) {
       const dbPath = this.config.paths.usersDb;
       if (!fs.existsSync(dbPath)) return null;
       // NUR lesend — Punkte-Writes für verknüpfte User laufen über die Queue.
+      const Database = require('better-sqlite3');
       this._db = new Database(dbPath, { readonly: true, fileMustExist: true });
       this._db.pragma('busy_timeout = 5000');
     }
@@ -102,13 +106,21 @@ class AccountLinkService {
 
   // ========== PUNKTE ==========
 
-  getPoints(discordId) {
+  async getPoints(discordId) {
     const twitchUsername = this.getTwitchUsername(discordId);
     if (twitchUsername) {
-      try {
-        const users = this._readUsersJson();
-        return users[twitchUsername.toLowerCase()]?.stats?.points || 0;
-      } catch { /* fall through */ }
+      // Kunden-Modus: Punkte des verknuepften Users kommen aus der Zappify-API.
+      if (botProfile.isCustomer && this.apiClient) {
+        try {
+          const user = await this.apiClient.getUser(twitchUsername.toLowerCase());
+          return user?.stats?.points || 0;
+        } catch { /* Zappify aus -> unten Fallback */ }
+      } else {
+        try {
+          const users = this._readUsersJson();
+          return users[twitchUsername.toLowerCase()]?.stats?.points || 0;
+        } catch { /* fall through */ }
+      }
     }
     const discordUsers = this._read(this.config.paths.discordUsers);
     return discordUsers[discordId]?.points || 0;
@@ -158,17 +170,17 @@ class AccountLinkService {
     this._write(this.config.paths.discordUsers, discordUsers);
   }
 
-  hasEnoughPoints(discordId, amount) {
-    return this.getPoints(discordId) >= amount;
+  async hasEnoughPoints(discordId, amount) {
+    return (await this.getPoints(discordId)) >= amount;
   }
 
   /**
    * Transferiert Punkte vom Verlierer zum Gewinner
-   * @returns {{ success, actualAmount, winnerNewPoints, loserNewPoints }}
+   * @returns {Promise<{ success, actualAmount, winnerNewPoints, loserNewPoints }>}
    */
-  transferPoints(winnerId, loserId, amount) {
-    const winnerPoints = this.getPoints(winnerId);
-    const loserPoints = this.getPoints(loserId);
+  async transferPoints(winnerId, loserId, amount) {
+    const winnerPoints = await this.getPoints(winnerId);
+    const loserPoints = await this.getPoints(loserId);
     const actual = Math.min(amount, loserPoints);
 
     // Delta-basiert (race-sicher, falls Zappify gerade aus ist)

@@ -1,41 +1,41 @@
 /**
- * Discord Bot für Stream Visualizer
+ * Discord Bot für Stream Visualizer / Zappify
  *
- * Features:
- * - Wolpertinger Customization
- * - Stats & Punkte-Abfragen
- * - Leaderboards (zukünftig)
- * - Erweiterbar für weitere Commands
+ * Zwei Profile (src/botProfile.js, env ZAPPIFY_BOT_PROFILE):
+ * - playground: voller Funktionsumfang inkl. Aaronius-eigener Doku-/Sync-Services
+ * - customer:   schlank - nur die zuschauer-relevanten Features, kein direkter
+ *               users.db-Zugriff, keine Aaronius-Channel-Services
+ *
+ * Aufruf mit `--deploy` registriert nur die Slash-Commands und beendet sich.
  */
 
-const { Client, GatewayIntentBits, Collection, Partials } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+// --deploy: nur Slash-Commands registrieren, dann raus (von Zappify getriggert)
+if (process.argv.includes('--deploy')) {
+  require('./deploy-commands').run()
+    .then((n) => { console.log(`[Deploy] Fertig (${n} Commands).`); process.exit(0); })
+    .catch((err) => { console.error('[Deploy] Fehlgeschlagen:', err.message); process.exit(1); });
+  return;
+}
+
+const { Client, GatewayIntentBits, Collection, Partials, ActivityType } = require('discord.js');
 const config = require('./config');
+const commandRegistry = require('./commands/_registry');
+const botProfile = require('./botProfile');
 const ApiClient = require('./services/ApiClient');
 const UserService = require('./services/UserService');
 const LeaderboardService = require('./services/LeaderboardService');
-const DocsService = require('./services/DocsService');
-const ChangelogQueueProcessor = require('./services/ChangelogQueueProcessor');
-const FeatureChannelService = require('./services/FeatureChannelService');
-const DocStatePoller = require('./services/DocStatePoller');
 const BingoService = require('./services/BingoService');
 const BingoImageGenerator = require('./services/BingoImageGenerator');
-const AssetSyncService = require('./services/AssetSyncService');
-const MemeSyncService = require('./services/MemeSyncService');
 const AccountLinkService = require('./services/AccountLinkService');
 const SSPGameManager = require('./services/SSPGameManager');
-const BadWordAlertPoller = require('./services/BadWordAlertPoller');
-const BugFixService = require('./services/BugFixService');
 
 // ========== BOT INITIALISIERUNG ==========
 
 console.log('========================================');
-console.log('   Stream Visualizer Discord Bot');
-console.log('   Version 1.0.0');
+console.log('   Zappify Discord Bot');
+console.log(`   Version 1.0.0  |  Profil: ${botProfile.PROFILE}`);
 console.log('========================================\n');
 
-// Discord Client erstellen
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -43,76 +43,57 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,          // Für Message-Zugriff bei Reactions
     GatewayIntentBits.MessageContent          // Für Attachments (UserImage-Feature)
   ],
-  partials: [Partials.Message, Partials.Channel, Partials.Reaction] // Für Reactions auf ältere Nachrichten
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
-// Commands Collection
 client.commands = new Collection();
-
-// Config an Client hängen (für Commands)
 client.config = config;
 
-// API-Client initialisieren
+// API-Client + Kern-Services (beide Profile)
 client.apiClient = new ApiClient(config.api.url, config.api.key);
-
-// UserService initialisieren (Dual-Mode)
 client.userService = new UserService(client.apiClient, config);
-
-// LeaderboardService initialisieren
 client.leaderboardService = new LeaderboardService(client, config);
-
-// DocsService initialisieren (Dokumentations-System)
-client.docsService = new DocsService(config);
-
-// ChangelogQueueProcessor initialisieren (Changelog-Posting)
-client.changelogProcessor = new ChangelogQueueProcessor(client, config);
-
-// DocStatePoller initialisieren (autonomer Docs-Watcher)
-client.docStatePoller = new DocStatePoller(client, config);
-
-// FeatureChannelService initialisieren (Feature-Dokumentation)
-client.featureChannelService = new FeatureChannelService(client, config);
-
-
-// BingoService initialisieren (Stream-Bingo)
 client.bingoService = new BingoService(client.apiClient);
-client.bingoImageGenerator = new BingoImageGenerator();
-
-// AssetSyncService initialisieren (Forum-Asset-Sync)
-client.assetSyncService = new AssetSyncService(client, config);
-
-// MemeSyncService initialisieren (Meme-Channel-Sync)
-client.memeSyncService = new MemeSyncService(client, config);
-
-// AccountLinkService initialisieren (Discord↔Twitch Verknüpfung)
-client.accountLinkService = new AccountLinkService(config);
-
-// SSPGameManager initialisieren (Schere-Stein-Papier)
+client.bingoImageGenerator = new BingoImageGenerator(client.apiClient);
+client.accountLinkService = new AccountLinkService(config, client.apiClient);
 client.sspGameManager = new SSPGameManager(client, config, client.accountLinkService);
 
-// BugFixService initialisieren
-client.bugFixService = new BugFixService(config);
-client.bugFixService.loadState();
+// Aaronius-eigene Services nur im Playground-Profil (lesen visual-Repo-Dateien,
+// syncen private Doku-/Feature-/Meme-Channels - beim Kunden toter Code / Fehler-Spam)
+let badWordAlertPoller = null;
+if (botProfile.isPlayground) {
+  const DocsService = require('./services/DocsService');
+  const ChangelogQueueProcessor = require('./services/ChangelogQueueProcessor');
+  const FeatureChannelService = require('./services/FeatureChannelService');
+  const DocStatePoller = require('./services/DocStatePoller');
+  const AssetSyncService = require('./services/AssetSyncService');
+  const MemeSyncService = require('./services/MemeSyncService');
+  const BadWordAlertPoller = require('./services/BadWordAlertPoller');
+  const BugFixService = require('./services/BugFixService');
 
-// BadWordAlertPoller initialisieren (pollt Visual API auf blockierte Nachrichten)
-const badWordAlertPoller = new BadWordAlertPoller(client, config);
+  client.docsService = new DocsService(config);
+  client.changelogProcessor = new ChangelogQueueProcessor(client, config);
+  client.docStatePoller = new DocStatePoller(client, config);
+  client.featureChannelService = new FeatureChannelService(client, config);
+  client.assetSyncService = new AssetSyncService(client, config);
+  client.memeSyncService = new MemeSyncService(client, config);
+  client.bugFixService = new BugFixService(config);
+  client.bugFixService.loadState();
+  badWordAlertPoller = new BadWordAlertPoller(client, config);
+}
 
-// Reaction-Handler registrieren (für Live Vote-Sync)
+// Reaction-Handler (Live Vote-Sync + User-Image + Custom-Avatar) - beide Profile
 const reactionHandler = require('./events/reactionHandler');
 reactionHandler.register(client);
 
 // ========== COMMAND LOADING ==========
 
+// Im Kunden-Profil sind /docs + /sync-assets reine Aaronius-Produkt-Infra
+const CUSTOMER_EXCLUDED_COMMANDS = new Set(['docs.js', 'sync-assets.js']);
+
 console.log('[Bot] Lade Commands...');
-
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
-
-  // Prüfen: Command hat data & execute?
+for (const { file, command } of commandRegistry) {
+  if (botProfile.isCustomer && CUSTOMER_EXCLUDED_COMMANDS.has(file)) continue;
   if ('data' in command && 'execute' in command) {
     client.commands.set(command.data.name, command);
     console.log(`[Bot] ✅ Command geladen: /${command.data.name}`);
@@ -120,30 +101,43 @@ for (const file of commandFiles) {
     console.warn(`[Bot] ⚠️ Command ${file} fehlt 'data' oder 'execute'`);
   }
 }
-
 console.log(`[Bot] ${client.commands.size} Commands geladen\n`);
+
+// ========== BOT-PRESENCE ==========
+
+const PRESENCE_MESSAGES = [
+  { text: 'mit Wolpertingern', type: ActivityType.Playing },
+  { text: 'Schere-Stein-Papier gegen sich selbst', type: ActivityType.Playing },
+  { text: 'auf den nächsten !verify Code', type: ActivityType.Watching },
+  { text: 'TTS-Nachrichten beim Ausdenken zu', type: ActivityType.Listening },
+  { text: 'Bingo-Karten aus', type: ActivityType.Watching },
+  { text: 'die Leaderboard-Punkte zusammen', type: ActivityType.Playing },
+  { text: 'euren Wolpertinger beim Wachsen zu', type: ActivityType.Watching },
+];
+
+function setRandomPresence() {
+  const choice = PRESENCE_MESSAGES[Math.floor(Math.random() * PRESENCE_MESSAGES.length)];
+  client.user.setActivity(choice.text, { type: choice.type });
+}
 
 // ========== EVENT HANDLERS ==========
 
-// Bot bereit
 client.once('ready', async () => {
   console.log(`[Bot] ✅ Eingeloggt als ${client.user.tag}`);
   console.log(`[Bot] Bot-ID: ${client.user.id}`);
   console.log(`[Bot] Auf ${client.guilds.cache.size} Server(n)\n`);
 
-  // UserService initialisieren
   console.log('[Bot] Initialisiere UserService...');
   await client.userService.init();
 
-  // Modus anzeigen
   const stats = client.userService.getStats();
   if (stats.currentMode === 'api') {
-    console.log('[Bot] 🟢 Modus: API-Mode (Visualizer läuft)');
+    console.log('[Bot] 🟢 Modus: API-Mode (Zappify läuft)');
   } else if (stats.currentMode === 'standalone') {
-    console.log('[Bot] 🔴 Modus: Standalone-Mode (Visualizer aus)');
+    console.log('[Bot] 🔴 Modus: Standalone-Mode (Zappify aus)');
   }
 
-  // Leaderboard-Service starten
+  // Leaderboard-Service (beide Profile - braucht nur die Channel-IDs)
   if (config.bot.leaderboardChannelId && config.bot.punkteChannelId) {
     console.log('[Bot] Initialisiere Leaderboard-Service...');
     await client.leaderboardService.start();
@@ -152,77 +146,49 @@ client.once('ready', async () => {
     console.warn('[Bot] ⚠️ Leaderboard-Channels nicht konfiguriert, Service deaktiviert');
   }
 
-  // DocsService initialisieren
-  console.log('[Bot] Initialisiere DocsService...');
-  await client.docsService.init();
-  const docsStats = client.docsService.getStats();
-  console.log(`[Bot] ✅ DocsService bereit (${docsStats.syncedFeatures} Features synced)`);
-
-  // ChangelogQueueProcessor starten
-  console.log('[Bot] Starte ChangelogQueueProcessor...');
-  client.changelogProcessor.start();
-
-  // DocStatePoller starten (autonomer Docs-Watcher)
-  console.log('[Bot] Starte DocStatePoller...');
-  client.docStatePoller.start();
-
-  // FeatureChannelService initialisieren und Channel syncen
-  console.log('[Bot] Initialisiere FeatureChannelService...');
-  await client.featureChannelService.init();
-  const featureStats = client.featureChannelService.getStats();
-  console.log(`[Bot] ✅ FeatureChannelService bereit (${featureStats.syncedFeatures} Features synced)`);
-
-  // Features zu Discord syncen
-  if (config.channels.features) {
-    console.log('[Bot] Synce Features zu Discord...');
-    const syncResult = await client.featureChannelService.syncChannel();
-    console.log(`[Bot] ✅ Features gesynct: ${syncResult.synced}/${syncResult.synced + syncResult.errors}`);
-  } else {
-    console.warn('[Bot] ⚠️ Features-Channel nicht konfiguriert, Service deaktiviert');
-  }
-
-  // BingoService Polling starten
+  // BingoService Polling (beide Profile)
   console.log('[Bot] Starte BingoService Polling...');
   client.bingoService.startPolling(client);
-  console.log('[Bot] ✅ BingoService Polling gestartet');
 
-  // AssetSync Polling starten
-  console.log('[Bot] Starte AssetSync Polling...');
-  client.assetSyncService.start();
+  // ---- Aaronius-eigene Services (nur Playground) ----
+  if (client.docsService) {
+    console.log('[Bot] Initialisiere DocsService...');
+    await client.docsService.init();
+    console.log(`[Bot] ✅ DocsService bereit (${client.docsService.getStats().syncedFeatures} Features)`);
+  }
+  if (client.changelogProcessor) client.changelogProcessor.start();
+  if (client.docStatePoller) client.docStatePoller.start();
+  if (client.featureChannelService) {
+    await client.featureChannelService.init();
+    if (config.channels.features) {
+      const syncResult = await client.featureChannelService.syncChannel();
+      console.log(`[Bot] ✅ Features gesynct: ${syncResult.synced}/${syncResult.synced + syncResult.errors}`);
+    }
+  }
+  if (client.assetSyncService) client.assetSyncService.start();
+  if (client.memeSyncService) client.memeSyncService.start();
+  if (badWordAlertPoller) badWordAlertPoller.start();
 
-  // MemeSync Polling starten
-  console.log('[Bot] Starte MemeSync Polling...');
-  client.memeSyncService.start();
-
-  // BadWordAlertPoller starten
-  badWordAlertPoller.start();
+  setRandomPresence();
+  setInterval(setRandomPresence, 15 * 60 * 1000);
 
   console.log('\n[Bot] 🚀 Bot läuft und ist bereit!\n');
 });
 
 // Interaction Handler
-client.on('interactionCreate', async interaction => {
-  // SSP Button & Select-Menu Interactions
+client.on('interactionCreate', async (interaction) => {
   if ((interaction.isButton() || interaction.isStringSelectMenu()) &&
       interaction.customId.startsWith('ssp_')) {
-    await handleSSPInteraction(interaction, client);
-    return;
+    return handleSSPInteraction(interaction, client);
   }
 
-  // Bingo Select-Menu Interactions
   if (interaction.isStringSelectMenu() && interaction.customId === 'bingo_mark_event') {
-    await handleBingoSelectMenu(interaction, client);
-    return;
+    return handleBingoSelectMenu(interaction, client);
   }
 
-  // Autocomplete-Interactions
   if (interaction.isAutocomplete()) {
     const command = client.commands.get(interaction.commandName);
-
-    if (!command || !command.autocomplete) {
-      return;
-    }
-
+    if (!command || !command.autocomplete) return;
     try {
       await command.autocomplete(interaction, client);
     } catch (error) {
@@ -231,25 +197,25 @@ client.on('interactionCreate', async interaction => {
     return;
   }
 
-  // Slash-Command Interactions
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
-
   if (!command) {
     console.error(`[Bot] ❌ Unbekannter Command: /${interaction.commandName}`);
     return;
   }
 
   try {
-    console.log(`[Bot] 📨 Command ausgeführt: /${interaction.commandName} | User: ${interaction.user.tag}`);
+    console.log(`[Bot] 📨 Command: /${interaction.commandName} | User: ${interaction.user.tag}`);
     await command.execute(interaction, client);
   } catch (error) {
-    console.error(`[Bot] ❌ Fehler beim Ausführen von /${interaction.commandName}:`, error);
-
-    const errorMessage = 'Es ist ein Fehler aufgetreten beim Ausführen dieses Commands!';
-
+    if (error.code === 10062) {
+      console.warn(`[Bot] ⚠️ Stale Interaction /${interaction.commandName} ignoriert (10062)`);
+      return;
+    }
+    console.error(`[Bot] ❌ Fehler bei /${interaction.commandName}:`, error);
     try {
+      const errorMessage = 'Es ist ein Fehler aufgetreten beim Ausführen dieses Commands!';
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ content: errorMessage, ephemeral: true });
       } else {
@@ -261,36 +227,18 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Fehler-Handler
-client.on('error', error => {
-  console.error('[Bot] ❌ Discord Client Fehler:', error);
-});
-
-process.on('unhandledRejection', error => {
-  console.error('[Bot] ❌ Unhandled Promise Rejection:', error);
-});
-
-// ========== BOT STARTEN ==========
+client.on('error', (error) => console.error('[Bot] ❌ Discord Client Fehler:', error));
+process.on('unhandledRejection', (error) => console.error('[Bot] ❌ Unhandled Promise Rejection:', error));
 
 // Graceful Shutdown
 process.on('SIGINT', async () => {
   console.log('\n[Bot] Shutdown eingeleitet...');
-  if (client.leaderboardService) {
-    await client.leaderboardService.stop();
-  }
-  if (client.changelogProcessor) {
-    client.changelogProcessor.stop();
-  }
-  if (client.docStatePoller) {
-    client.docStatePoller.stop();
-  }
-  if (client.assetSyncService) {
-    client.assetSyncService.stop();
-  }
-  if (client.memeSyncService) {
-    client.memeSyncService.stop();
-  }
-  badWordAlertPoller.stop();
+  try { if (client.leaderboardService) await client.leaderboardService.stop(); } catch { /* noop */ }
+  try { client.changelogProcessor?.stop(); } catch { /* noop */ }
+  try { client.docStatePoller?.stop(); } catch { /* noop */ }
+  try { client.assetSyncService?.stop(); } catch { /* noop */ }
+  try { client.memeSyncService?.stop(); } catch { /* noop */ }
+  try { badWordAlertPoller?.stop(); } catch { /* noop */ }
   await client.destroy();
   console.log('[Bot] ✅ Bot gestoppt');
   process.exit(0);
@@ -301,10 +249,8 @@ process.on('SIGINT', async () => {
 async function handleBingoSelectMenu(interaction, client) {
   try {
     await interaction.deferUpdate();
-
     const eventId = interaction.values[0];
 
-    // Gespeicherten Twitch/YouTube Username holen
     const userData = client.bingoService.userMessages.get(interaction.user.id);
     if (!userData) {
       await interaction.followUp({
@@ -314,51 +260,29 @@ async function handleBingoSelectMenu(interaction, client) {
       return;
     }
     const username = userData.username;
-
-    // Event markieren
     const result = await client.bingoService.markEvent(username, eventId);
 
     if (!result.success) {
-      await interaction.followUp({
-        content: `❌ ${result.error || 'Event konnte nicht markiert werden'}`,
-        ephemeral: true
-      });
+      await interaction.followUp({ content: `❌ ${result.error || 'Event konnte nicht markiert werden'}`, ephemeral: true });
       return;
     }
 
     if (result.verified) {
-      await interaction.followUp({
-        content: `✅ Event wurde bestaetigt! Deine Karte wird aktualisiert.`,
-        ephemeral: true
-      });
-
-      // Bild direkt aktualisieren (nicht auf Polling warten)
+      await interaction.followUp({ content: `✅ Event wurde bestaetigt! Deine Karte wird aktualisiert.`, ephemeral: true });
       try {
         const status = await client.bingoService.getStatus();
         if (status && status.verifiedEvents) {
-          const verifiedEvents = new Set(status.verifiedEvents);
-          await client.bingoService.updateUserCard(client, interaction.user.id, userData, verifiedEvents);
+          await client.bingoService.updateUserCard(client, interaction.user.id, userData, new Set(status.verifiedEvents));
         }
       } catch (updateErr) {
         console.error('[Bot] Bingo Karten-Update Fehler:', updateErr.message);
       }
     } else {
-      await interaction.followUp({
-        content: `⏳ Event gemeldet! Warte auf Bestaetigung vom Streamer...`,
-        ephemeral: true
-      });
+      await interaction.followUp({ content: `⏳ Event gemeldet! Warte auf Bestaetigung vom Streamer...`, ephemeral: true });
     }
-
   } catch (err) {
     console.error('[Bot] Bingo Select-Menu Fehler:', err);
-    try {
-      await interaction.followUp({
-        content: '❌ Ein Fehler ist aufgetreten.',
-        ephemeral: true
-      });
-    } catch (e) {
-      // Ignore
-    }
+    try { await interaction.followUp({ content: '❌ Ein Fehler ist aufgetreten.', ephemeral: true }); } catch { /* ignore */ }
   }
 }
 
@@ -369,36 +293,21 @@ async function handleSSPInteraction(interaction, client) {
   const id = interaction.customId;
 
   try {
-    // Waffenwahl Challenger: ssp_wc_${gameId}
     if (interaction.isStringSelectMenu() && id.startsWith('ssp_wc_')) {
-      const gameId = id.slice('ssp_wc_'.length);
-      return await gm.handleChallengerWeapon(interaction, gameId, interaction.values[0]);
+      return await gm.handleChallengerWeapon(interaction, id.slice('ssp_wc_'.length), interaction.values[0]);
     }
-
-    // Punkte-Einsatz: ssp_pts_${gameId}
     if (interaction.isStringSelectMenu() && id.startsWith('ssp_pts_')) {
-      const gameId = id.slice('ssp_pts_'.length);
-      return await gm.handlePointsSelect(interaction, gameId, interaction.values[0]);
+      return await gm.handlePointsSelect(interaction, id.slice('ssp_pts_'.length), interaction.values[0]);
     }
-
-    // Waffenwahl Akzeptierender: ssp_wd_${gameId} — VOR ssp_confirm prüfen da kein Konflikt, aber Konsistenz
     if (interaction.isStringSelectMenu() && id.startsWith('ssp_wd_')) {
-      const gameId = id.slice('ssp_wd_'.length);
-      return await gm.handleChallengedWeapon(interaction, gameId, interaction.values[0]);
+      return await gm.handleChallengedWeapon(interaction, id.slice('ssp_wd_'.length), interaction.values[0]);
     }
-
-    // Confirm (Challenge posten): ssp_confirm_${gameId}
     if (interaction.isButton() && id.startsWith('ssp_confirm_')) {
-      const gameId = id.slice('ssp_confirm_'.length);
-      return await gm.handleConfirm(interaction, gameId);
+      return await gm.handleConfirm(interaction, id.slice('ssp_confirm_'.length));
     }
-
-    // Accept (offene Challenge annehmen): ssp_accept_${gameId}
     if (interaction.isButton() && id.startsWith('ssp_accept_')) {
-      const gameId = id.slice('ssp_accept_'.length);
-      return await gm.handleAccept(interaction, gameId);
+      return await gm.handleAccept(interaction, id.slice('ssp_accept_'.length));
     }
-
   } catch (err) {
     console.error('[SSP] Interaction-Fehler:', err);
     try {
@@ -409,21 +318,17 @@ async function handleSSPInteraction(interaction, client) {
   }
 }
 
-// Token-Validierung
+// ========== BOT STARTEN ==========
+
 if (!config.discord.token) {
-  console.error('[Bot] ❌ DISCORD_TOKEN fehlt in .env!');
-  console.error('[Bot] ❌ Bitte erstelle eine .env Datei basierend auf .env.example');
+  console.error('[Bot] ❌ DISCORD_TOKEN fehlt!');
+  console.error('[Bot] ❌ Im Kunden-Setup wird der Token von Zappify verwaltet (Discord-Bot-Assistent).');
+  console.error('[Bot] ❌ Für den manuellen Betrieb: .env aus .env.example anlegen.');
   process.exit(1);
 }
 
-if (!config.api.key) {
-  console.warn('[Bot] ⚠️ API_KEY fehlt in .env!');
-  console.warn('[Bot] ⚠️ API-Requests werden möglicherweise fehlschlagen.');
-}
-
-// Bot einloggen
-client.login(config.discord.token).catch(err => {
+client.login(config.discord.token).catch((err) => {
   console.error('[Bot] ❌ Login fehlgeschlagen:', err.message);
-  console.error('[Bot] ❌ Ist dein DISCORD_TOKEN korrekt?');
+  console.error('[Bot] ❌ Ist der DISCORD_TOKEN korrekt?');
   process.exit(1);
 });

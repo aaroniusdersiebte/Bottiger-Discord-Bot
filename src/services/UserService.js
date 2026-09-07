@@ -10,11 +10,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
 const ModeDetector = require('./ModeDetector');
 const AssetManager = require('./AssetManager');
 const ImageGenerator = require('./ImageGenerator');
 const PendingWriteQueue = require('../utils/pendingWriteQueue');
+const botProfile = require('../botProfile');
 
 class UserService {
   constructor(apiClient, config) {
@@ -22,7 +22,7 @@ class UserService {
     this.config = config;
     this.modeDetector = new ModeDetector(apiClient);
     this.assetManager = new AssetManager(config.paths.assets);
-    this.imageGenerator = new ImageGenerator(config.paths.assets);
+    this.imageGenerator = new ImageGenerator(apiClient);
 
     // SQLite Verbindung (lazy init bei erstem Zugriff) — IMMER read-only
     this._db = null;
@@ -32,6 +32,12 @@ class UserService {
   }
 
   _getDb() {
+    // Kunden-Modus: kein direkter DB-Zugriff (better-sqlite3 ist im Bundle nicht
+    // enthalten). Alles laeuft ueber die Zappify-API; ist Zappify aus, gibt es
+    // diese Info voruebergehend nicht.
+    if (botProfile.isCustomer) {
+      throw new Error('Diese Info ist nur verfuegbar, solange Zappify laeuft.');
+    }
     if (!this._db) {
       const dbPath = this.config.paths.usersDb;
       if (!fs.existsSync(dbPath)) {
@@ -39,6 +45,7 @@ class UserService {
       }
       // NUR lesend. Schreibvorgänge laufen über die API bzw. PendingWriteQueue.
       // read-only ist WAL-safe: beliebig viele Leser parallel zu Zappifys Writer.
+      const Database = require('better-sqlite3');
       this._db = new Database(dbPath, { readonly: true, fileMustExist: true });
       this._db.pragma('busy_timeout = 5000');
     }

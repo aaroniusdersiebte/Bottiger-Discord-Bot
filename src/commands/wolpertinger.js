@@ -9,6 +9,7 @@
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { validateImage } = require('../utils/ImageValidator');
 const naturalSort = require('../utils/naturalSort');
+const { buildUsernameSuggestions } = require('../utils/usernameSuggestions');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
@@ -61,40 +62,8 @@ module.exports = {
 
   async autocomplete(interaction, client) {
     const focusedValue = interaction.options.getFocused();
-
-    // Discord-Username als Standard-Vorschlag
-    const suggestions = [interaction.user.username];
-
-    // Usernames aus DB laden (Standalone-Mode)
-    try {
-      const fs = require('fs');
-      const Database = require('better-sqlite3');
-      const config = client.userService.config;
-
-      if (fs.existsSync(config.paths.usersDb)) {
-        const db = new Database(config.paths.usersDb, { readonly: true });
-        const rows = db.prepare(
-          'SELECT username FROM users WHERE username LIKE ? LIMIT 24'
-        ).all(`%${focusedValue.toLowerCase()}%`);
-        db.close();
-
-        for (const row of rows) {
-          if (!suggestions.includes(row.username)) {
-            suggestions.push(row.username);
-          }
-        }
-      }
-    } catch (err) {
-      console.error('[Wolpertinger] Autocomplete-Fehler:', err);
-    }
-
-    // Max 25 Vorschläge
-    const results = suggestions.slice(0, 25).map(name => ({
-      name: name,
-      value: name
-    }));
-
-    await interaction.respond(results);
+    const suggestions = await buildUsernameSuggestions(interaction, client, focusedValue);
+    await interaction.respond(suggestions.slice(0, 25).map((name) => ({ name, value: name })));
   }
 };
 
@@ -209,13 +178,11 @@ async function showSelectionStep(interaction, state, assets, steps) {
   if (state.currentStep > 0) {
     try {
       const imageGenerator = interaction.client.userService.getImageGenerator();
-      const assetManager = interaction.client.userService.getAssetManager();
-
       console.log('[Wolpertinger] Generiere Preview...');
-      previewBuffer = await imageGenerator.generatePreview(state.selections, assetManager);
+      previewBuffer = await imageGenerator.generatePreview(state.selections);
     } catch (err) {
-      console.error('[Wolpertinger] Preview-Generierung fehlgeschlagen:', err);
-      // Fortfahren ohne Preview
+      console.error('[Wolpertinger] Preview-Generierung fehlgeschlagen:', err.message);
+      // Fortfahren ohne Preview (z.B. wenn Zappify aus ist)
     }
   }
 
@@ -298,24 +265,16 @@ async function showConfirmation(interaction, state) {
         .setStyle(ButtonStyle.Danger)
     );
 
-  // Finale Preview generieren (mit zufälligem Mund)
+  // Finale Preview generieren - Zappify waehlt den Mund-Frame selbst
   let previewBuffer = null;
   try {
     const imageGenerator = interaction.client.userService.getImageGenerator();
-    const assetManager = interaction.client.userService.getAssetManager();
-
-    // Zufälligen Mund hinzufügen
-    const mundAssets = assetManager.assetCache.get('mund') || [];
-    if (mundAssets.length > 0) {
-      state.selections.mund = mundAssets[Math.floor(Math.random() * mundAssets.length)];
-      console.log('[Wolpertinger] Zufälliger Mund gewählt:', state.selections.mund);
-    }
-
+    state.selections.mund = 'random';
     console.log('[Wolpertinger] Generiere finale Preview...');
-    previewBuffer = await imageGenerator.generateCharacter(state.selections, assetManager);
+    previewBuffer = await imageGenerator.generateCharacter(state.selections);
   } catch (err) {
-    console.error('[Wolpertinger] Finale Preview-Generierung fehlgeschlagen:', err);
-    // Fortfahren ohne Preview
+    console.error('[Wolpertinger] Finale Preview-Generierung fehlgeschlagen:', err.message);
+    // Fortfahren ohne Preview (z.B. wenn Zappify aus ist)
   }
 
   const replyOptions = {

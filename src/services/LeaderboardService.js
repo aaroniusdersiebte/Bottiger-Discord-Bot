@@ -12,7 +12,7 @@
 const { generateProgressBar } = require('../utils/ProgressBar');
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
+const botProfile = require('../botProfile');
 
 class LeaderboardService {
   constructor(client, config) {
@@ -23,7 +23,10 @@ class LeaderboardService {
       leaderboard: null, // Message-ID für Nachrichten-Leaderboard
       punkte: null       // Message-ID für Punkte-Leaderboard
     };
-    this.statePath = path.join(this.config.paths.visualizer, 'config', 'leaderboard-state.json');
+    // Im Kunden-Modus liegt der State im Bot-Ordner (config.paths.leaderboardState);
+    // im Playground weiterhin im visual-Repo (Rueckwaertskompat).
+    this.statePath = config.paths.leaderboardState
+      || path.join(this.config.paths.visualizer, 'config', 'leaderboard-state.json');
   }
 
   /**
@@ -118,14 +121,22 @@ class LeaderboardService {
           .slice(0, 15);
       }
 
+      // Kunden-Modus: kein DB-Fallback (better-sqlite3 nicht im Bundle). Ist
+      // Zappify aus, gibt es das Leaderboard voruebergehend nicht.
+      if (botProfile.isCustomer) {
+        console.warn('[Leaderboard] Zappify aus - Leaderboard wird erst beim naechsten Start aktualisiert');
+        return null;
+      }
+
       // Standalone-Mode: direkt aus DB (effizienter — kein Laden aller User)
       const dbPath = this.config.paths.usersDb;
-      if (!fs.existsSync(dbPath)) {
+      if (!dbPath || !fs.existsSync(dbPath)) {
         console.warn('[Leaderboard] ⚠️ DB nicht gefunden:', dbPath);
         return null;
       }
 
       const dbCol = sortBy === 'points' ? 'points' : 'message_count';
+      const Database = require('better-sqlite3');
       const db = new Database(dbPath, { readonly: true });
       db.pragma('busy_timeout = 3000');
 

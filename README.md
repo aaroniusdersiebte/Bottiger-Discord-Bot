@@ -1,6 +1,27 @@
-# Stream Visualizer Discord Bot
+# Zappify Discord Bot
 
-Discord Bot für Stream Visualizer - ermöglicht Wolpertinger-Customization, Stats-Abfragen und mehr direkt aus Discord.
+Discord Bot für Zappify - ermöglicht Wolpertinger-Customization, Stats-Abfragen, Bingo, SSP und mehr direkt aus Discord.
+
+## Zwei Betriebs-Profile
+
+Über die Umgebungsvariable `ZAPPIFY_BOT_PROFILE`:
+
+| Profil | Wofür |
+|---|---|
+| `playground` (default) | Voller Umfang inkl. Aaronius-eigener Doku-/Feature-/Changelog-/Meme-/Forum-Sync-Services, `/docs`, `/sync-assets`, direktem `users.db`-Zugriff. `npm install` + `.env`. |
+| `customer` | Auslieferung an Zappify-Kunden: schlank, nur zuschauer-relevante Features, **kein** direkter DB-Zugriff (alles über die Zappify-API), **kein** eigenes `canvas` (Bilder rendert Zappify). Läuft als gebündelte `dist/bot.cjs` über Zappifys Electron-Binary — kein separates Node, keine `.exe`. Token + Einstellungen verwaltet Zappify (Discord-Bot-Assistent). |
+
+### Kunden-Bundle bauen
+
+```bash
+npm install
+npm run build:bundle   # -> dist/bot.cjs
+```
+
+Zappify startet `dist/bot.cjs` mit `ELECTRON_RUN_AS_NODE=1` und übergibt
+`DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `API_URL`, `ZAPPIFY_BOT_PROFILE=customer` als env.
+`dist/bot.cjs --deploy` registriert nur die Slash-Commands und beendet sich.
+Nicht-Secret-Einstellungen: `config/bot-settings.json` (siehe `.example`).
 
 ## Features
 

@@ -1,79 +1,106 @@
 /**
- * Zentrale Bot-Konfiguration
+ * Zentrale Bot-Konfiguration.
  *
- * Lädt Environment-Variablen und stellt sie strukturiert bereit
+ * Quellen (in dieser Reihenfolge, erste gewinnt):
+ *  1. process.env  (Zappify uebergibt Token + Kern-Settings via spawn-env)
+ *  2. config/bot-settings.json  (nicht-Secret-Einstellungen, vom Zappify-Assistenten gepflegt)
+ *  3. .env  (nur manueller / Playground-Betrieb)
+ *  4. Defaults
+ *
+ * Fehlt eine .env, ist das kein Fehler - dotenv meldet das still.
  */
 
 require('dotenv').config();
 
+const fs = require('fs');
 const path = require('path');
 
+// --- config/bot-settings.json (nicht-Secret, optional) ---
+let botSettings = {};
+try {
+  const p = process.env.BOT_SETTINGS_PATH || path.resolve(__dirname, '../config/bot-settings.json');
+  if (fs.existsSync(p)) botSettings = JSON.parse(fs.readFileSync(p, 'utf8')) || {};
+} catch (err) {
+  console.warn('[config] bot-settings.json nicht lesbar:', err.message);
+}
+
+/** env > bot-settings.json > default */
+const pick = (envKey, settingsKey, def = undefined) => {
+  if (process.env[envKey] !== undefined && process.env[envKey] !== '') return process.env[envKey];
+  if (settingsKey && botSettings[settingsKey] !== undefined && botSettings[settingsKey] !== '') return botSettings[settingsKey];
+  return def;
+};
+
+const profile = process.env.ZAPPIFY_BOT_PROFILE === 'customer' ? 'customer' : 'playground';
+
 module.exports = {
-  // Discord
+  profile,
+
   discord: {
     token: process.env.DISCORD_TOKEN,
     clientId: process.env.DISCORD_CLIENT_ID,
-    guildId: process.env.DISCORD_GUILD_ID, // Optional: Für guild-only commands (Testing)
+    guildId: process.env.DISCORD_GUILD_ID || undefined,
   },
 
-  // Stream Visualizer API (wenn Visualizer läuft)
   api: {
     url: process.env.API_URL || 'http://127.0.0.1:3000',
-    key: process.env.API_KEY
+    key: process.env.API_KEY,
   },
 
-  // File-Pfade (für Standalone-Mode, wenn Visualizer aus)
+  // File-Pfade. Im Kunden-Modus wird die DB nicht direkt gelesen (alles ueber API),
+  // die Aaronius-Defaults greifen dann nie.
   paths: {
-    visualizer: process.env.VISUALIZER_PATH || 'C:\\Streaming\\Code\\visual',
-    usersDb: process.env.USERS_DB_PATH || 'C:\\Streaming\\Code\\visual\\data\\users.db',
-    assets: process.env.ASSETS_PATH || 'C:\\Streaming\\Code\\visual\\assets\\tts-characters',
-    pendingVerifications: process.env.PENDING_VERIFICATIONS_PATH || 'C:\\Streaming\\Code\\visual\\config\\pending-verifications.json',
-    // Discord-spezifische Dateien (im discord-Projekt selbst)
+    visualizer: pick('VISUALIZER_PATH', 'visualizerPath', ''),
+    usersDb: pick('USERS_DB_PATH', 'usersDbPath', ''),
+    assets: pick('ASSETS_PATH', 'assetsPath', ''),
+    pendingVerifications: pick('PENDING_VERIFICATIONS_PATH', null,
+      path.resolve(__dirname, '../config/pending-verifications.json')),
     discordLinks: process.env.DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/discord-links.json'),
     discordUsers: process.env.DISCORD_USERS_PATH || path.resolve(__dirname, '../config/discord-users.json'),
     pendingDiscordLinks: process.env.PENDING_DISCORD_LINKS_PATH || path.resolve(__dirname, '../config/pending-discord-links.json'),
-    // Schreib-Queue: gepufferte DB-Writes, die Zappify beim Start übernimmt
     pendingWrites: process.env.PENDING_WRITES_PATH || path.resolve(__dirname, '../config/pending-writes.json'),
-    // Bot-lokaler Custom-Avatar-Cooldown (Anti-Spam, braucht Zappify nicht)
-    avatarCooldowns: process.env.AVATAR_COOLDOWNS_PATH || path.resolve(__dirname, '../config/avatar-cooldowns.json')
+    avatarCooldowns: process.env.AVATAR_COOLDOWNS_PATH || path.resolve(__dirname, '../config/avatar-cooldowns.json'),
+    // Leaderboard-State liegt im Kunden-Modus im Bot-Ordner (nicht im visual-Repo)
+    leaderboardState: process.env.LEADERBOARD_STATE_PATH || path.resolve(__dirname, '../config/leaderboard-state.json'),
   },
 
-  // SSP Battle-System
   ssp: {
-    battleChannelId: process.env.BATTLE_CHANNEL_ID || null
+    battleChannelId: pick('BATTLE_CHANNEL_ID', 'battleChannelId', null),
   },
 
-  // Bad Word Alert (pollt Visual API auf blockierte Nachrichten)
   badwordAlert: {
-    channelId: process.env.BADWORD_CHANNEL_ID || null
+    channelId: process.env.BADWORD_CHANNEL_ID || null,
   },
 
-  // Bot-Settings
   bot: {
-    logLevel: process.env.LOG_LEVEL || 'info', // 'debug', 'info', 'warn', 'error'
-    leaderboardChannelId: process.env.LEADERBOARD_CHANNEL_ID,
-    punkteChannelId: process.env.PUNKTE_CHANNEL_ID,
-    leaderboardUpdateInterval: 300000, // 5 Minuten
-    leaderboardExcludedUsers: process.env.LEADERBOARD_EXCLUDED_USERS
-      ? process.env.LEADERBOARD_EXCLUDED_USERS.split(',').map(u => u.trim().toLowerCase())
-      : []
+    logLevel: process.env.LOG_LEVEL || 'info',
+    leaderboardChannelId: pick('LEADERBOARD_CHANNEL_ID', 'leaderboardChannelId'),
+    punkteChannelId: pick('PUNKTE_CHANNEL_ID', 'punkteChannelId'),
+    leaderboardUpdateInterval: 300000,
+    leaderboardExcludedUsers: (() => {
+      const raw = pick('LEADERBOARD_EXCLUDED_USERS', 'leaderboardExcludedUsers', '');
+      return raw ? String(raw).split(',').map((u) => u.trim().toLowerCase()).filter(Boolean) : [];
+    })(),
   },
 
-  // Dokumentations-Channels
+  // Feature-Toggles (Zappify setzt sie anhand aktiver Module)
+  features: {
+    ssp: pick('FEATURE_SSP', 'featureSsp', 'true') !== 'false',
+    bingo: pick('FEATURE_BINGO', 'featureBingo', 'true') !== 'false',
+  },
+
   channels: {
     docs: process.env.DOCS_CHANNEL_ID,
     features: process.env.FEATURES_CHANNEL_ID,
-    changelog: process.env.CHANGELOG_CHANNEL_ID
+    changelog: process.env.CHANGELOG_CHANNEL_ID,
   },
 
-  // Docs-Polling (autonomer Docs-Watcher)
   docs: {
-    pollingInterval: parseInt(process.env.DOCS_POLLING_INTERVAL) || 30000 // 30 Sekunden
+    pollingInterval: parseInt(process.env.DOCS_POLLING_INTERVAL, 10) || 30000,
   },
 
-  // Asset-Sync (Forum-Thread-Synchronisation)
   assetSync: {
-    pollingInterval: parseInt(process.env.ASSET_SYNC_INTERVAL) || 300000, // 5 Minuten
+    pollingInterval: parseInt(process.env.ASSET_SYNC_INTERVAL, 10) || 300000,
     threadIds: {
       hintergrund: process.env.ASSET_THREAD_HINTERGRUND,
       koerper: process.env.ASSET_THREAD_KOERPER,
@@ -81,49 +108,41 @@ module.exports = {
       augen: process.env.ASSET_THREAD_AUGEN,
       hut: process.env.ASSET_THREAD_HUT,
       rahmen: process.env.ASSET_THREAD_RAHMEN,
-    }
+    },
   },
 
-  // Meme-Sync (Text-Channel-Synchronisation)
   memeSync: {
-    pollingInterval: parseInt(process.env.MEME_SYNC_INTERVAL) || 300000, // 5 Minuten
+    pollingInterval: parseInt(process.env.MEME_SYNC_INTERVAL, 10) || 300000,
     channelId: process.env.MEME_CHANNEL_ID,
-    path: process.env.MEME_PATH || 'C:\\Streaming\\Code\\visual\\assets\\meme'
+    path: process.env.MEME_PATH || '',
   },
 
-  // Docs-Forum (Forum-Channel für Dokumentation)
   docsForum: {
     channelId: process.env.DOCS_FORUM_CHANNEL_ID,
     changelogThreadId: process.env.DOCS_CHANGELOG_THREAD_ID,
-    overviewThreadId: process.env.DOCS_OVERVIEW_THREAD_ID
+    overviewThreadId: process.env.DOCS_OVERVIEW_THREAD_ID,
   },
 
-  // Custom Avatar Upload (eigene Wolpertinger-Bilder)
   customAvatar: {
-    channelId: process.env.CUSTOM_AVATAR_CHANNEL_ID,
+    channelId: pick('CUSTOM_AVATAR_CHANNEL_ID', 'customAvatarChannelId'),
     verifyPath: process.env.CUSTOM_AVATAR_VERIFY_PATH,
-    maxFileSize: 5 * 1024 * 1024, // 5MB
+    maxFileSize: 5 * 1024 * 1024,
     cooldownDays: 7,
-    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
   },
 
-  // Bug-Fix Channel (✅ Reaction → löscht Nachricht, aktualisiert Übersicht)
   bugfixChannel: {
-    channelId: process.env.BUGFIX_CHANNEL_ID || '1482361898291953684'
+    channelId: process.env.BUGFIX_CHANNEL_ID || null,
   },
 
-  // UserImage-Feature (Bilder im Stream anzeigen)
   userImage: {
-    enabled: process.env.USER_IMAGE_ENABLED !== 'false',
-    // Channels in denen das Feature aktiv ist (Komma-getrennt)
-    channels: process.env.USER_IMAGE_CHANNELS
-      ? process.env.USER_IMAGE_CHANNELS.split(',').map(c => c.trim())
-      : [],
-    // Rolle die mit 📺 reagieren darf
-    moderatorRole: process.env.USER_IMAGE_MOD_ROLE || 'Discord Master',
-    // Emoji zum Triggern
+    enabled: pick('USER_IMAGE_ENABLED', 'userImageEnabled', 'false') !== 'false',
+    channels: (() => {
+      const raw = pick('USER_IMAGE_CHANNELS', 'userImageChannels', '');
+      return raw ? String(raw).split(',').map((c) => c.trim()).filter(Boolean) : [];
+    })(),
+    moderatorRole: pick('USER_IMAGE_MOD_ROLE', 'userImageModRole', 'Discord Master'),
     triggerEmoji: '📺',
-    // Erlaubte Bild-Formate
-    allowedFormats: ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
-  }
+    allowedFormats: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+  },
 };

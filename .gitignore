@@ -42,3 +42,8 @@ leaderboard.txt
 ### Sonstiger generierter State ###
 features/
 images/
+config/bot-settings.json
+config/leaderboard-state.json
+
+### Build-Artefakt (esbuild-Bundle fuer die Zappify-Auslieferung) ###
+dist/

@@ -1,18 +1,18 @@
 {
-  "name": "stream-visualizer-discord-bot",
-  "version": "1.0.0",
-  "description": "Discord Bot für Stream Visualizer - Wolpertinger Customization, Stats, Punkte & mehr",
+  "name": "zappify-discord-bot",
+  "version": "1.1.0",
+  "description": "Discord Bot für Zappify - Wolpertinger, Stats, Punkte, Bingo, SSP",
   "main": "src/index.js",
   "scripts": {
-    "start": "title Discord-Bot && node src/index.js",
+    "start": "node src/index.js",
     "deploy": "node src/deploy-commands.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "build:bundle": "node scripts/build-bundle.js"
   },
   "keywords": [
     "discord",
     "bot",
-    "stream",
-    "visualizer",
+    "zappify",
     "wolpertinger"
   ],
   "author": "",
@@ -20,11 +20,12 @@
   "dependencies": {
     "discord.js": "^14.14.1",
     "axios": "^1.6.2",
-    "better-sqlite3": "^9.6.0",
     "dotenv": "^16.3.1",
-    "canvas": "^2.11.2"
+    "better-sqlite3": "^9.6.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "esbuild": "^0.23.0"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
