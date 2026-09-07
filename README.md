@@ -59,10 +59,10 @@ DISCORD_GUILD_ID=deine-server-id-optional
 
 # Stream Visualizer API
 API_URL=http://127.0.0.1:3000
-API_KEY=45f8b6a0f46bcbcb15af0a7a227b181c0f1f9d05313dcb85738f2b38b61a7b09
+API_KEY=<DEIN_API_KEY_AUS_APP-SETTINGS>
 ```
 
-**Hinweis:** Der `API_KEY` muss mit dem Key in `stream-visualizer/config/app-settings.json` übereinstimmen!
+**Hinweis:** Der `API_KEY` muss mit `api.key` in Zappifys `config/app-settings.json` übereinstimmen. Zappify generiert den Key beim ersten Start automatisch — dort nachschlagen und hier eintragen. **Niemals** einen echten Key in Git committen.
 
 #### Guild-ID finden (optional, für Testing)
 

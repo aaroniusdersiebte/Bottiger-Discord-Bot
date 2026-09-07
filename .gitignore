@@ -1,53 +1,42 @@
-### Linux ###
+### Node ###
+node_modules/
+*.log
+*.stackdump
+
+### OS / Editor ###
 *~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
-
-# KDE directory preferences
 .directory
-
-# Linux trash folder which might appear on any partition or disk
 .Trash-*
-
-# .nfs files are created when an open file is removed but is still being accessed
 .nfs*
-
-### Windows ###
-# Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
-
-# Environment variables
-.env
 ehthumbs_vista.db
-.claude/
-# Dump file
-*.stackdump
-node_modules
-node_modules/
-# Folder config file
 [Dd]esktop.ini
-
-# Recycle Bin used on file shares
 $RECYCLE.BIN/
-
-# Windows Installer files
 *.cab
 *.msi
 *.msix
 *.msm
 *.msp
-
-# Windows shortcuts
 *.lnk
+*:Zone.Identifier
 
+### Claude ###
+.claude/
+
+### Secrets / lokale Konfiguration ###
 .env
+.env.*
+!.env.example
+
+### Laufzeit-State mit personenbezogenen Daten (Discord-ID <-> Twitch-Name) ###
+config/discord-links.json
+config/discord-users.json
+config/pending-discord-links.json
+leaderboard.txt
+
+### Sonstiger generierter State ###
 features/
 images/
-features
-images
-.env.example
-git config --global credential.helper store
-.env:2
