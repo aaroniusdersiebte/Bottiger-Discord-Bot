@@ -154,9 +154,8 @@ client.once('ready', async () => {
     console.warn('[Bot] ⚠️ Leaderboard-Channels nicht konfiguriert, Service deaktiviert');
   }
 
-  // BingoService Polling (beide Profile)
-  console.log('[Bot] Starte BingoService Polling...');
-  client.bingoService.startPolling(client);
+  // BingoService: Polling startet bei Bedarf (erstes /bingo start bzw.
+  // Rueckkanal 'bingo.round-started'), nicht mehr dauerhaft ab Boot.
 
   // ---- Aaronius-eigene Services (nur Playground) ----
   if (client.docsService) {

@@ -172,10 +172,23 @@ class BingoService {
       const response = await this.apiClient.get('/api/bingo/status');
       return response.data;
     } catch (err) {
-      if (err.response?.status === 503) {
-        return null; // BingoModule nicht verfuegbar
+      // 503 = Modul nicht geladen, 403 = Modul gesperrt/deaktiviert (z.B. WIP in /public)
+      if (err.response?.status === 503 || err.response?.status === 403) {
+        return null;
       }
       throw err;
+    }
+  }
+
+  /**
+   * Beendet Polling und verwirft das User-Tracking (Runde vorbei).
+   * Aufgerufen vom Rueckkanal (AppEventQueueService) bei 'bingo.round-ended'.
+   */
+  stopAndClear() {
+    this.stopPolling();
+    if (this.userMessages.size > 0) {
+      console.log('[BingoService] Runde beendet (Rueckkanal) - User-Tracking gecleared');
+      this.userMessages.clear();
     }
   }
 

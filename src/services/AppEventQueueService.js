@@ -14,6 +14,7 @@ const path = require('path');
 
 const POLL_MS = 15 * 1000;
 const MAX_ATTEMPTS = 5;
+const BINGO_INVITE = '🎲 **Eine Bingo-Runde laeuft!** Hol dir deine Karte mit `/bingo start`.';
 
 class AppEventQueueService {
   constructor(client, config) {
@@ -84,9 +85,49 @@ class AppEventQueueService {
     this._write({ version: 1, entries: keep });
   }
 
+  /**
+   * Broadcast "Runde gestartet" an alle per /link verknuepften User + Polling anwerfen.
+   * Best effort: immer als erledigt behandelt (kein Retry-Spam).
+   * @returns {Promise<boolean>}
+   */
+  async _deliverBingoRoundStarted() {
+    try { this.client.bingoService?.startPolling(this.client); } catch { /* egal */ }
+
+    let links = {};
+    try {
+      const p = this.config.paths.discordLinks;
+      if (p && fs.existsSync(p)) links = JSON.parse(fs.readFileSync(p, 'utf8')) || {};
+    } catch { links = {}; }
+
+    const ids = Object.keys(links);
+    if (ids.length === 0) return true;
+
+    for (const discordId of ids) {
+      try {
+        const user = await this.client.users.fetch(discordId);
+        await user.send(BINGO_INVITE);
+      } catch (err) {
+        if (err.code !== 50007) {
+          console.warn(`[AppEventQueue] Bingo-Einladung an ${discordId} fehlgeschlagen: ${err.message}`);
+        }
+      }
+    }
+    console.log(`[AppEventQueue] Bingo-Einladung an ${ids.length} verknuepfte User verschickt`);
+    return true;
+  }
+
   /** @returns {Promise<boolean>} true = erledigt (auch bei "User nicht erreichbar") */
   async _deliver(entry) {
-    if (!entry || !entry.discordUserId) return true;
+    if (!entry) return true;
+
+    // Bingo-Rueckkanal (Broadcast an verknuepfte User bzw. Lifecycle)
+    if (entry.type === 'bingo.round-started') return this._deliverBingoRoundStarted();
+    if (entry.type === 'bingo.round-ended') {
+      try { this.client.bingoService?.stopAndClear(); } catch { /* egal */ }
+      return true;
+    }
+
+    if (!entry.discordUserId) return true;
     let text;
     if (entry.type === 'image.approved') {
       const isAvatar = entry.imageType === 'custom-avatar';

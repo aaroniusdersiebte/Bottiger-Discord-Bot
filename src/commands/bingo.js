@@ -19,14 +19,14 @@ module.exports = {
         .addStringOption(option =>
           option
             .setName('username')
-            .setDescription('Dein Twitch/YouTube Username')
-            .setRequired(true)
+            .setDescription('Nur noetig, wenn dein Account nicht per /link verknuepft ist')
+            .setRequired(false)
         )
         .addStringOption(option =>
           option
             .setName('platform')
-            .setDescription('Deine Streaming-Platform')
-            .setRequired(true)
+            .setDescription('Deine Streaming-Platform (Standard: Twitch)')
+            .setRequired(false)
             .addChoices(
               { name: 'Twitch', value: 'twitch' },
               { name: 'YouTube', value: 'youtube' }
@@ -40,14 +40,14 @@ module.exports = {
         .addStringOption(option =>
           option
             .setName('username')
-            .setDescription('Dein Twitch/YouTube Username')
-            .setRequired(true)
+            .setDescription('Nur noetig, wenn dein Account nicht per /link verknuepft ist')
+            .setRequired(false)
         )
         .addStringOption(option =>
           option
             .setName('platform')
-            .setDescription('Deine Streaming-Platform')
-            .setRequired(true)
+            .setDescription('Deine Streaming-Platform (Standard: Twitch)')
+            .setRequired(false)
             .addChoices(
               { name: 'Twitch', value: 'twitch' },
               { name: 'YouTube', value: 'youtube' }
@@ -65,6 +65,27 @@ module.exports = {
     }
   }
 };
+
+/**
+ * Ermittelt den Stream-Usernamen: bevorzugt aus der /link-Verknuepfung,
+ * sonst aus der (optionalen) Option. platform: Option, sonst 'twitch'.
+ * @returns {{ username: string|null, platform: string, linked: boolean }}
+ */
+function resolveIdentity(interaction, client) {
+  const optUser = interaction.options.getString('username');
+  const optPlatform = interaction.options.getString('platform');
+  let linkedName = null;
+  try {
+    linkedName = client.accountLinkService?.getTwitchUsername(interaction.user.id) || null;
+  } catch { linkedName = null; }
+
+  if (linkedName) {
+    return { username: linkedName, platform: optPlatform || 'twitch', linked: true };
+  }
+  return { username: optUser || null, platform: optPlatform || 'twitch', linked: false };
+}
+
+const LINK_HINT = 'Verknuepfe deinen Account einmalig mit `/link` - dann brauchst du den Namen nie wieder anzugeben.';
 
 /**
  * /bingo start - Bingo-Karte anfordern
@@ -93,9 +114,19 @@ async function handleStart(interaction, client) {
       return;
     }
 
-    // Karte generieren mit Twitch/YouTube Username
-    const username = interaction.options.getString('username');
-    const platform = interaction.options.getString('platform');
+    // Stream-Username: aus /link-Verknuepfung, sonst aus Option
+    const { username, platform, linked } = resolveIdentity(interaction, client);
+    if (!username) {
+      await interaction.editReply({
+        content: `❌ Ich kenne deinen Stream-Namen nicht. Gib ihn per \`username\` an - oder besser: ${LINK_HINT}`,
+        ephemeral: true
+      });
+      return;
+    }
+    if (!linked) {
+      // Hinweis anhaengen, aber trotzdem fortfahren
+      console.log(`[Bingo Command] ${interaction.user.tag} nicht verknuepft - nutzt manuellen Namen "${username}"`);
+    }
     const cardResult = await client.bingoService.generateCard(username, platform);
 
     if (!cardResult.success) {
@@ -235,12 +266,19 @@ async function handleWin(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    const username = interaction.options.getString('username');
-    const platform = interaction.options.getString('platform');
+    const { username, platform } = resolveIdentity(interaction, client);
 
     if (!client.bingoService) {
       await interaction.editReply({
         content: '❌ Bingo-Service nicht verfuegbar.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (!username) {
+      await interaction.editReply({
+        content: `❌ Ich kenne deinen Stream-Namen nicht. Gib ihn per \`username\` an - oder besser: ${LINK_HINT}`,
         ephemeral: true
       });
       return;
@@ -270,10 +308,13 @@ async function handleWin(interaction, client) {
 
     // Erfolg
     const points = result.points || 0;
-    await interaction.editReply({
-      content: `🎉 **BINGO!** Du hast Platz **${result.position}** erreicht und erhaeltst **+${points} Punkte**!`,
-      ephemeral: true
-    });
+    const winText = `🎉 **BINGO!** Du hast Platz **${result.position}** erreicht und erhaeltst **+${points} Punkte**!`;
+    await interaction.editReply({ content: winText, ephemeral: true });
+
+    // Zusaetzlich als DM (bleibt im Verlauf, auch nach dem Stream)
+    try {
+      await interaction.user.send(winText);
+    } catch { /* DMs zu - ephemerale Antwort reicht */ }
 
   } catch (err) {
     console.error('[Bingo Command] Win-Fehler:', err);
