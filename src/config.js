@@ -84,7 +84,17 @@ module.exports = {
   },
 
   badwordAlert: {
-    channelId: process.env.BADWORD_CHANNEL_ID || null,
+    channelId: pick('BADWORD_CHANNEL_ID', 'badwordAlertChannelId', null),
+  },
+
+  // Optionale Channel-Einschraenkung fuer /meme-submit bzw. /wolpertinger-submit -
+  // leer/null = Command funktioniert in jedem Channel des Servers.
+  memeSubmit: {
+    channelId: pick('MEME_SUBMIT_CHANNEL_ID', 'memeSubmitChannelId', null),
+  },
+
+  wolpertingerSubmit: {
+    channelId: pick('WOLPERTINGER_SUBMIT_CHANNEL_ID', 'wolpertingerSubmitChannelId', null),
   },
 
   bot: {

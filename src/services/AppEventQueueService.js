@@ -130,11 +130,16 @@ class AppEventQueueService {
     if (!entry.discordUserId) return true;
     let text;
     if (entry.type === 'image.approved') {
-      const isAvatar = entry.imageType === 'custom-avatar';
-      text = isAvatar
-        ? `**✅ Dein Custom-Avatar wurde freigegeben!**\n\n`
-          + (entry.code ? `Falls dein Avatar noch nicht aktiv ist, schreibe im Twitch/YouTube-Chat:\n\`!verify ${entry.code}\`` : 'Dein Avatar ist jetzt aktiv.')
-        : `**✅ Dein Bild wurde freigegeben** und erscheint im Stream.`;
+      if (entry.imageType === 'custom-avatar') {
+        text = `**✅ Dein Custom-Avatar wurde freigegeben!**\n\n`
+          + (entry.code ? `Falls dein Avatar noch nicht aktiv ist, schreibe im Twitch/YouTube-Chat:\n\`!verify ${entry.code}\`` : 'Dein Avatar ist jetzt aktiv.');
+      } else if (entry.imageType === 'meme') {
+        text = `**✅ Dein Meme wurde freigegeben** und ist jetzt im Stream-Chat per !meme abrufbar.`;
+      } else if (entry.imageType === 'wolpertinger-asset') {
+        text = `**✅ Dein Wolpertinger-Teil wurde freigegeben** und ist jetzt im Wolpertinger-Studio waehlbar.`;
+      } else {
+        text = `**✅ Dein Bild wurde freigegeben** und erscheint im Stream.`;
+      }
     } else if (entry.type === 'image.rejected') {
       text = `**❌ Dein Bild wurde leider abgelehnt.**`
         + (entry.reason ? `\n\nGrund: ${entry.reason}` : '')

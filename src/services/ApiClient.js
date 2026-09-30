@@ -154,6 +154,8 @@ class ApiClient {
         username: p.username,
         code: p.code,
         note: p.note,
+        command: p.command,
+        category: p.category,
       });
       return response.data;
     } catch (err) {

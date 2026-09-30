@@ -13,8 +13,10 @@ module.exports = [
   { file: 'docs.js', command: require('./docs') },
   { file: 'leaderboard.js', command: require('./leaderboard') },
   { file: 'link.js', command: require('./link') },
+  { file: 'meme-submit.js', command: require('./meme-submit') },
   { file: 'ssp.js', command: require('./ssp') },
   { file: 'sync-assets.js', command: require('./sync-assets') },
   { file: 'user.js', command: require('./user') },
   { file: 'wolpertinger.js', command: require('./wolpertinger') },
+  { file: 'wolpertinger-submit.js', command: require('./wolpertinger-submit') },
 ];

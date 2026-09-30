@@ -60,7 +60,6 @@ client.sspGameManager = new SSPGameManager(client, config, client.accountLinkSer
 
 // Aaronius-eigene Services nur im Playground-Profil (lesen visual-Repo-Dateien,
 // syncen private Doku-/Feature-/Meme-Channels - beim Kunden toter Code / Fehler-Spam)
-let badWordAlertPoller = null;
 if (botProfile.isPlayground) {
   const DocsService = require('./services/DocsService');
   const ChangelogQueueProcessor = require('./services/ChangelogQueueProcessor');
@@ -68,7 +67,6 @@ if (botProfile.isPlayground) {
   const DocStatePoller = require('./services/DocStatePoller');
   const AssetSyncService = require('./services/AssetSyncService');
   const MemeSyncService = require('./services/MemeSyncService');
-  const BadWordAlertPoller = require('./services/BadWordAlertPoller');
   const BugFixService = require('./services/BugFixService');
 
   client.docsService = new DocsService(config);
@@ -79,6 +77,13 @@ if (botProfile.isPlayground) {
   client.memeSyncService = new MemeSyncService(client, config);
   client.bugFixService = new BugFixService(config);
   client.bugFixService.loadState();
+}
+
+// Bad-Word-Alerts: generischer Mechanismus, beide Profile - laeuft nur an, wenn
+// ein Alert-Channel konfiguriert ist (analog Leaderboard-Service-Gate unten).
+let badWordAlertPoller = null;
+if (config.badwordAlert?.channelId) {
+  const BadWordAlertPoller = require('./services/BadWordAlertPoller');
   badWordAlertPoller = new BadWordAlertPoller(client, config);
 }
 

@@ -12,6 +12,10 @@
   "customAvatarChannelId": "",
   "battleChannelId": "",
 
+  "badwordAlertChannelId": "",
+  "memeSubmitChannelId": "",
+  "wolpertingerSubmitChannelId": "",
+
   "featureSsp": true,
   "featureBingo": true
 }
