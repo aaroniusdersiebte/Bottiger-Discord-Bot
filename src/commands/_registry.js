@@ -15,6 +15,7 @@ module.exports = [
   { file: 'link.js', command: require('./link') },
   { file: 'meme-submit.js', command: require('./meme-submit') },
   { file: 'ssp.js', command: require('./ssp') },
+  { file: 'sticker-submit.js', command: require('./sticker-submit') },
   { file: 'sync-assets.js', command: require('./sync-assets') },
   { file: 'user.js', command: require('./user') },
   { file: 'wolpertinger.js', command: require('./wolpertinger') },

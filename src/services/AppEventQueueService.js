@@ -135,6 +135,8 @@ class AppEventQueueService {
           + (entry.code ? `Falls dein Avatar noch nicht aktiv ist, schreibe im Twitch/YouTube-Chat:\n\`!verify ${entry.code}\`` : 'Dein Avatar ist jetzt aktiv.');
       } else if (entry.imageType === 'meme') {
         text = `**✅ Dein Meme wurde freigegeben** und ist jetzt im Stream-Chat per !meme abrufbar.`;
+      } else if (entry.imageType === 'face-sticker') {
+        text = `**✅ Dein Gesichts-Sticker wurde freigegeben** und ist jetzt im Stream-Chat per !sticker abrufbar (\`!sticker\` zeigt alle Namen).`;
       } else if (entry.imageType === 'wolpertinger-asset') {
         text = `**✅ Dein Wolpertinger-Teil wurde freigegeben** und ist jetzt im Wolpertinger-Studio waehlbar.`;
       } else {
