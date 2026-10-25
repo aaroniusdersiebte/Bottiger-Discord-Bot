@@ -13,6 +13,7 @@ const config = require('../config');
 // In-Memory (Bot-Neustart setzt zurück — für ein moderiertes Feature ok).
 const USER_IMAGE_COOLDOWN_MS = 60 * 1000;
 const _userImageLastSent = new Map();
+let _modeHintLogged = false;
 
 module.exports = {
   /**
@@ -43,6 +44,11 @@ module.exports = {
       // 1. UserImage-Feature (📺)
       if (emojiApproval && emoji === config.userImage?.triggerEmoji) {
         await handleUserImageReaction(reaction, user, client);
+      } else if (!emojiApproval && emoji === config.userImage?.triggerEmoji && !_modeHintLogged) {
+        // Sonst wirkt 📺 im 'app'-Modus wie kaputt (kein Log, keine Anzeige)
+        _modeHintLogged = true;
+        console.log('[ReactionHandler] 📺 ignoriert: Bild-Freigabe-Modus ist "app" - '
+          + 'Freigabe im Zappify-Tab "Discord-Bot" oder dort Modus "Emoji"/"Beides" waehlen (Bot-Neustart).');
       }
 
       // 2. Bug-Fix Channel (✅ → Nachricht löschen + Übersicht aktualisieren)
