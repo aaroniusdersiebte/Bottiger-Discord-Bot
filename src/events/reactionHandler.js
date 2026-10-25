@@ -13,7 +13,6 @@ const config = require('../config');
 // In-Memory (Bot-Neustart setzt zurück — für ein moderiertes Feature ok).
 const USER_IMAGE_COOLDOWN_MS = 60 * 1000;
 const _userImageLastSent = new Map();
-let _modeHintLogged = false;
 
 module.exports = {
   /**
@@ -37,18 +36,11 @@ module.exports = {
 
       const emoji = reaction.emoji.name;
 
-      // Bild-Freigabe per Emoji nur in den Modi 'emoji' / 'both' (Default 'app' =
-      // Freigabe laeuft im Zappify-Tab, siehe config.imageReview.mode).
-      const emojiApproval = ['emoji', 'both'].includes(config.imageReview?.mode || 'app');
-
-      // 1. UserImage-Feature (📺)
-      if (emojiApproval && emoji === config.userImage?.triggerEmoji) {
+      // 1. UserImage-Feature (📺) - in JEDEM Freigabe-Modus: die 📺-Reaktion eines
+      // Mods (Rolle wird in handleUserImageReaction geprueft) ist selbst die Freigabe.
+      // Im Modus 'app'/'both' laeuft die automatische Einreichung (fanartForward) parallel.
+      if (emoji === config.userImage?.triggerEmoji) {
         await handleUserImageReaction(reaction, user, client);
-      } else if (!emojiApproval && emoji === config.userImage?.triggerEmoji && !_modeHintLogged) {
-        // Sonst wirkt 📺 im 'app'-Modus wie kaputt (kein Log, keine Anzeige)
-        _modeHintLogged = true;
-        console.log('[ReactionHandler] 📺 ignoriert: Bild-Freigabe-Modus ist "app" - '
-          + 'Freigabe im Zappify-Tab "Discord-Bot" oder dort Modus "Emoji"/"Beides" waehlen (Bot-Neustart).');
       }
 
       // 2. Bug-Fix Channel (✅ → Nachricht löschen + Übersicht aktualisieren)
@@ -180,8 +172,9 @@ async function handleUserImageReaction(reaction, user, client) {
       await client.apiClient.sendUserImage(imageUrl, username);
       console.log(`[ReactionHandler] ✅ Bild erfolgreich zur Queue hinzugefügt`);
 
-      // Bestätigung im Channel (✅ Reaction)
+      // Bestätigung im Channel (✅ Reaction); 🕓 der App-Einreichung entfernen
       await message.react('✅');
+      try { await message.reactions.cache.get('🕓')?.users.remove(client.user.id); } catch { /* noop */ }
 
     } catch (apiErr) {
       console.error(`[ReactionHandler] ❌ API-Fehler:`, apiErr.message);
