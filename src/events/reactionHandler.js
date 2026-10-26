@@ -169,7 +169,7 @@ async function handleUserImageReaction(reaction, user, client) {
     console.log(`[ReactionHandler] Bild-URL: ${imageUrl}`);
 
     try {
-      await client.apiClient.sendUserImage(imageUrl, username);
+      await client.apiClient.sendUserImage(imageUrl, username, message.content || '');
       console.log(`[ReactionHandler] ✅ Bild erfolgreich zur Queue hinzugefügt`);
 
       // Bestätigung im Channel (✅ Reaction); 🕓 der App-Einreichung entfernen

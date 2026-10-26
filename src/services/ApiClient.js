@@ -109,14 +109,16 @@ class ApiClient {
    * Sendet User-Bild an Visualizer zur Stream-Anzeige
    * @param {string} imageUrl - URL des Bildes (z.B. Discord CDN)
    * @param {string} username - Discord-Username des Bild-Senders
+   * @param {string} [caption] - Begleittext der Nachricht (Zappify bereinigt/kürzt ihn)
    * @returns {Promise<object>} { success, message }
    */
-  async sendUserImage(imageUrl, username) {
+  async sendUserImage(imageUrl, username, caption = '') {
     try {
       const response = await this.client.post('/api/user-image', {
         imageUrl: imageUrl,
         username: username,
-        source: 'discord'
+        source: 'discord',
+        caption: String(caption || '').slice(0, 300)
       });
       return response.data;
     } catch (err) {

@@ -52,6 +52,7 @@ module.exports = {
             discordUserId: message.author.id,
             discordTag: message.author.tag,
             username: message.author.username,
+            note: message.content || '', // Begleittext -> Bildunterschrift (Mod sieht ihn bei der Freigabe)
           });
           console.log(`[fanartForward] Bild von ${message.author.tag} an Zappify eingereicht`);
         } catch (apiErr) {
