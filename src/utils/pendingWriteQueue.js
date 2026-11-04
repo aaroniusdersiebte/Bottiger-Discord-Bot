@@ -9,8 +9,12 @@
  * Bekannte Typen:
  *   - 'points.add'  { username, delta }   -> race-sicher (Delta statt Absolutwert)
  *   - 'points.set'  { username, points }
+ *
+ * Zappify benennt die Datei vor dem Abarbeiten um (pending-writes.draining-*.json)
+ * und dedupliziert über die Eintrags-ID — die ID muss daher eindeutig bleiben.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -22,19 +26,32 @@ class PendingWriteQueue {
   }
 
   _read() {
+    let text;
     try {
-      const raw = JSON.parse(fs.readFileSync(this.filePath, 'utf8'));
-      if (raw && Array.isArray(raw.entries)) return raw;
+      text = fs.readFileSync(this.filePath, 'utf8');
     } catch {
-      /* Datei fehlt oder ist kaputt -> Neuanlage */
+      return { version: 1, entries: [] }; // Datei fehlt -> Neuanlage
     }
+    try {
+      const raw = JSON.parse(text);
+      if (raw && Array.isArray(raw.entries)) return raw;
+    } catch { /* kaputt -> unten sichern */ }
+    // Kaputte Datei NICHT überschreiben (sonst gehen Buchungen verloren), sondern sichern
+    const backup = path.join(path.dirname(this.filePath), `pending-writes.corrupt-${Date.now()}.json`);
+    try {
+      fs.renameSync(this.filePath, backup);
+      console.warn(`[PendingWriteQueue] Queue unlesbar — gesichert als ${path.basename(backup)}`);
+    } catch { /* bleibt liegen */ }
     return { version: 1, entries: [] };
   }
 
   _write(data) {
     const dir = path.dirname(this.filePath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2), 'utf8');
+    // Atomar (tmp + rename): Zappify liest nie eine halb geschriebene Datei
+    const tmp = `${this.filePath}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tmp, this.filePath);
   }
 
   /**
@@ -45,7 +62,7 @@ class PendingWriteQueue {
   enqueue(type, payload) {
     const data = this._read();
     data.entries.push({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      id: `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`,
       type,
       payload,
       createdAt: new Date().toISOString()
