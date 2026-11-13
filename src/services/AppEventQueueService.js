@@ -5,6 +5,9 @@
  * config.paths.pendingBotNotifications:
  *   { version:1, entries:[ { id, type, discordUserId, username, imageType, code, reason, createdAt } ] }
  *   type: 'image.approved' | 'image.rejected'
+ *   type: 'announce.post' | 'announce.edit'  { announceKey, channelId, message:{content,embeds,allowedMentions}, expiresAt }
+ *     -> Kanal-Nachricht (Go-Live / neues YouTube-Video). 'announce.edit' ergänzt die
+ *        Nachricht mit gleichem announceKey (Multistream: zweite Plattform), sonst neu.
  *
  * Der Bot stellt sie dem Nutzer per DM zu und entfernt verarbeitete Einträge.
  */
@@ -23,6 +26,7 @@ class AppEventQueueService {
     this.filePath = config.paths.pendingBotNotifications;
     this._timer = null;
     this._running = false;
+    this._announced = new Map(); // announceKey -> Message (für announce.edit)
   }
 
   start() {
@@ -116,9 +120,60 @@ class AppEventQueueService {
     return true;
   }
 
+  /**
+   * Ankündigung in einen Kanal posten bzw. ergänzen.
+   * @returns {Promise<boolean>} true = erledigt (auch bei abgelaufen/kein Kanal)
+   */
+  async _deliverAnnounce(entry) {
+    if (!entry.channelId || !entry.message) return true;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      console.warn(`[AppEventQueue] Ankündigung ${entry.announceKey || entry.id} abgelaufen - verworfen`);
+      return true;
+    }
+    const m = entry.message;
+    const payload = {
+      content: typeof m.content === 'string' && m.content ? m.content.slice(0, 2000) : undefined,
+      embeds: Array.isArray(m.embeds) ? m.embeds.slice(0, 10) : [],
+      allowedMentions: m.allowedMentions || { parse: [] },
+    };
+    if (!payload.content && payload.embeds.length === 0) return true;
+
+    try {
+      if (entry.type === 'announce.edit' && this._announced.has(entry.announceKey)) {
+        const msg = this._announced.get(entry.announceKey);
+        await msg.edit({ content: payload.content ?? null, embeds: payload.embeds, allowedMentions: payload.allowedMentions });
+        console.log(`[AppEventQueue] Ankündigung ergänzt (${entry.announceKey})`);
+        return true;
+      }
+      const channel = await this.client.channels.fetch(entry.channelId);
+      if (!channel || typeof channel.send !== 'function') {
+        console.warn(`[AppEventQueue] Ankündigungs-Kanal ${entry.channelId} nicht gefunden/kein Textkanal`);
+        return true;
+      }
+      const msg = await channel.send(payload);
+      if (entry.announceKey) {
+        this._announced.set(entry.announceKey, msg);
+        if (this._announced.size > 50) this._announced.delete(this._announced.keys().next().value);
+      }
+      console.log(`[AppEventQueue] Ankündigung in #${channel.name || entry.channelId} gepostet`);
+      return true;
+    } catch (err) {
+      // 50001 Missing Access / 50013 Missing Permissions / 10003 Unknown Channel -> nicht retryen
+      if ([50001, 50013, 10003].includes(err.code)) {
+        console.warn(`[AppEventQueue] Ankündigung nicht möglich (Kanal ${entry.channelId}): ${err.message} - Bot-Rechte im Kanal prüfen (Nachrichten senden, Links einbetten, ggf. @everyone erwähnen)`);
+        return true;
+      }
+      console.warn(`[AppEventQueue] Ankündigung fehlgeschlagen: ${err.message}`);
+      return false;
+    }
+  }
+
   /** @returns {Promise<boolean>} true = erledigt (auch bei "User nicht erreichbar") */
   async _deliver(entry) {
     if (!entry) return true;
+
+    // Kanal-Ankündigungen (Go-Live / neues Video)
+    if (entry.type === 'announce.post' || entry.type === 'announce.edit') return this._deliverAnnounce(entry);
 
     // Bingo-Rueckkanal (Broadcast an verknuepfte User bzw. Lifecycle)
     if (entry.type === 'bingo.round-started') return this._deliverBingoRoundStarted();
