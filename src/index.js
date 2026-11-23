@@ -18,6 +18,7 @@ if (process.argv.includes('--deploy')) {
 }
 
 const { Client, GatewayIntentBits, Collection, Partials, ActivityType } = require('discord.js');
+const feedbackCommand = require('./commands/feedback');
 const config = require('./config');
 const commandRegistry = require('./commands/_registry');
 const botProfile = require('./botProfile');
@@ -199,6 +200,17 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.isStringSelectMenu() && interaction.customId === 'bingo_mark_event') {
     return handleBingoSelectMenu(interaction, client);
+  }
+
+  // Ticket-System (/feedback): Bug/Idee-Auswahl, Formulare, Rückfrage-Antwort, Voting
+  if ((interaction.isButton() || interaction.isModalSubmit() || interaction.isStringSelectMenu()) &&
+      /^(feedback_|ticket_)/.test(interaction.customId)) {
+    try {
+      await feedbackCommand.handleInteraction(interaction, client);
+    } catch (error) {
+      if (error.code !== 10062) console.error('[Bot] ❌ Fehler im Ticket-System:', error);
+    }
+    return;
   }
 
   if (interaction.isAutocomplete()) {

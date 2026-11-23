@@ -11,6 +11,7 @@
 module.exports = [
   { file: 'bingo.js', command: require('./bingo') },
   { file: 'docs.js', command: require('./docs') },
+  { file: 'feedback.js', command: require('./feedback') },
   { file: 'leaderboard.js', command: require('./leaderboard') },
   { file: 'link.js', command: require('./link') },
   { file: 'meme-submit.js', command: require('./meme-submit') },

@@ -171,6 +171,57 @@ class ApiClient {
     }
   }
 
+  // ---------- Ticket-System (/feedback, Zappify DiscordTicketsModule) ----------
+
+  /**
+   * Fehler einer Ticket-Route in { error, ...details } übersetzen (kein throw).
+   * @private
+   */
+  _ticketError(err) {
+    if (err.response) return { ok: false, status: err.response.status, ...(err.response.data || {}) };
+    return { ok: false, status: 0, error: 'offline' };
+  }
+
+  /** Darf der User gerade ein Ticket einreichen? -> { ok, reason?, retryInSec?, max? } */
+  async ticketEligibility(discordUserId) {
+    try {
+      const res = await this.client.get('/api/discord/tickets/eligibility', { params: { discordUserId } });
+      return res.data;
+    } catch (err) {
+      return this._ticketError(err);
+    }
+  }
+
+  /** Neues Ticket -> { ok:true, number } oder { ok:false, error, reason? } */
+  async submitTicket(p) {
+    try {
+      const res = await this.client.post('/api/discord/ticket', p, { timeout: 20000 });
+      return { ok: true, ...res.data };
+    } catch (err) {
+      return this._ticketError(err);
+    }
+  }
+
+  /** Antwort auf eine Rückfrage des Streamers */
+  async replyTicket(ticketId, discordUserId, text) {
+    try {
+      const res = await this.client.post(`/api/discord/ticket/${encodeURIComponent(ticketId)}/reply`, { discordUserId, text });
+      return { ok: true, ...res.data };
+    } catch (err) {
+      return this._ticketError(err);
+    }
+  }
+
+  /** Stimme für eine Idee umschalten -> { ok, voted, votes, number } */
+  async voteTicket(ticketId, discordUserId) {
+    try {
+      const res = await this.client.post(`/api/discord/ticket/${encodeURIComponent(ticketId)}/vote`, { discordUserId });
+      return { ok: true, ...res.data };
+    } catch (err) {
+      return this._ticketError(err);
+    }
+  }
+
   /**
    * Health-Check (prüft ob API erreichbar ist)
    * @returns {Promise<boolean>}

@@ -11,7 +11,11 @@
  *   type: 'overview.sync'  { overviewKey, channelId, messages:[{content,embeds}] }
  *     -> Befehls-Übersicht im Info-Kanal (Zappify AU10): der Bot bearbeitet seine gemerkten
  *        Nachrichten (config.paths.overviewState), postet fehlende neu, löscht überzählige.
- *        messages:[] = Übersicht entfernen.
+ *        messages:[] = Übersicht entfernen. messages[].components (Roh-JSON) werden mitgesendet
+ *        (Ticket-Roadmap, overviewKey 'tickets': Voting-Auswahl ticket_vote).
+ *   type: 'ticket.dm'  { discordUserId, ticketId, embed, components? }
+ *     -> PN zum Ticket-System (/feedback); Text/Embed baut Zappify, Rückfrage-PNs tragen
+ *        einen Antwort-Button (ticket_reply:<id>, siehe commands/feedback.js).
  *
  * Der Bot stellt sie dem Nutzer per DM zu und entfernt verarbeitete Einträge.
  */
@@ -249,6 +253,7 @@ class AppEventQueueService {
         const payload = {
           content: typeof m.content === 'string' && m.content ? m.content.slice(0, 2000) : null,
           embeds: Array.isArray(m.embeds) ? m.embeds.slice(0, 10) : [],
+          components: Array.isArray(m.components) ? m.components.slice(0, 5) : [],
           allowedMentions: { parse: [] },
         };
         const oldId = prev.messageIds[i];
@@ -280,8 +285,38 @@ class AppEventQueueService {
     }
     all[key] = { channelId: entry.channelId, messageIds: ids };
     this._writeOverviewState(all);
-    console.log(`[AppEventQueue] Befehls-Übersicht in #${channel.name || entry.channelId} aktualisiert (${ids.length} Nachricht(en))`);
+    console.log(`[AppEventQueue] Übersicht '${key}' in #${channel.name || entry.channelId} aktualisiert (${ids.length} Nachricht(en))`);
     return true;
+  }
+
+  /**
+   * PN zum Ticket-System (/feedback).
+   * @returns {Promise<boolean>} true = erledigt (auch bei geschlossenen PNs)
+   */
+  async _deliverTicketDm(entry) {
+    if (!entry.discordUserId || !entry.embed || typeof entry.embed !== 'object') return true;
+    const payload = {
+      embeds: [entry.embed],
+      components: Array.isArray(entry.components) ? entry.components.slice(0, 5) : [],
+      allowedMentions: { parse: [] },
+    };
+    try {
+      const user = await this.client.users.fetch(entry.discordUserId);
+      await user.send(payload);
+      console.log(`[AppEventQueue] Ticket-PN an ${user.tag}`);
+      return true;
+    } catch (err) {
+      if (err.code === 50007) {
+        console.warn(`[AppEventQueue] ${entry.discordUserId} hat PNs deaktiviert - Ticket-PN übersprungen`);
+        return true;
+      }
+      if (err.code === 50035) {
+        console.warn(`[AppEventQueue] Ticket-PN ungültig (${err.message}) - verworfen`);
+        return true;
+      }
+      console.warn(`[AppEventQueue] Ticket-PN fehlgeschlagen (${entry.discordUserId}): ${err.message}`);
+      return false;
+    }
   }
 
   /** @returns {Promise<boolean>} true = erledigt (auch bei "User nicht erreichbar") */
@@ -300,6 +335,9 @@ class AppEventQueueService {
       try { this.client.bingoService?.stopAndClear(); } catch { /* egal */ }
       return true;
     }
+
+    // Ticket-System: fertiges Embed von Zappify per PN
+    if (entry.type === 'ticket.dm') return this._deliverTicketDm(entry);
 
     if (!entry.discordUserId) return true;
     let text;
