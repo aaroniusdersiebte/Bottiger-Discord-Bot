@@ -8,6 +8,10 @@
  *   type: 'announce.post' | 'announce.edit'  { announceKey, channelId, message:{content,embeds,allowedMentions}, expiresAt }
  *     -> Kanal-Nachricht (Go-Live / neues YouTube-Video). 'announce.edit' ergänzt die
  *        Nachricht mit gleichem announceKey (Multistream: zweite Plattform), sonst neu.
+ *   type: 'overview.sync'  { overviewKey, channelId, messages:[{content,embeds}] }
+ *     -> Befehls-Übersicht im Info-Kanal (Zappify AU10): der Bot bearbeitet seine gemerkten
+ *        Nachrichten (config.paths.overviewState), postet fehlende neu, löscht überzählige.
+ *        messages:[] = Übersicht entfernen.
  *
  * Der Bot stellt sie dem Nutzer per DM zu und entfernt verarbeitete Einträge.
  */
@@ -27,6 +31,7 @@ class AppEventQueueService {
     this._timer = null;
     this._running = false;
     this._announced = new Map(); // announceKey -> Message (für announce.edit)
+    this.overviewStatePath = config.paths.overviewState || path.join(path.dirname(this.filePath), 'overview-state.json');
   }
 
   start() {
@@ -168,12 +173,126 @@ class AppEventQueueService {
     }
   }
 
+  _readOverviewState() {
+    try {
+      const s = JSON.parse(fs.readFileSync(this.overviewStatePath, 'utf8'));
+      return s && typeof s === 'object' ? s : {};
+    } catch { return {}; }
+  }
+
+  _writeOverviewState(state) {
+    try {
+      fs.mkdirSync(path.dirname(this.overviewStatePath), { recursive: true });
+      const tmp = `${this.overviewStatePath}.tmp`;
+      fs.writeFileSync(tmp, JSON.stringify(state, null, 2), 'utf8');
+      fs.renameSync(tmp, this.overviewStatePath);
+    } catch (err) {
+      console.warn(`[AppEventQueue] Übersichts-Zustand nicht speicherbar: ${err.message}`);
+    }
+  }
+
+  /** Eigene Nachrichten in einem Kanal löschen (best effort). */
+  async _deleteMessages(channelId, ids) {
+    if (!channelId || !ids || !ids.length) return;
+    let channel = null;
+    try { channel = await this.client.channels.fetch(channelId); } catch { return; }
+    if (!channel?.messages) return;
+    for (const id of ids) {
+      try {
+        const m = await channel.messages.fetch(id);
+        await m.delete();
+      } catch { /* schon weg / keine Rechte */ }
+    }
+  }
+
+  /**
+   * Befehls-Übersicht synchronisieren: vorhandene Nachrichten bearbeiten statt neu posten.
+   * @returns {Promise<boolean>} true = erledigt
+   */
+  async _deliverOverview(entry) {
+    const key = entry.overviewKey || 'main';
+    const all = this._readOverviewState();
+    const prev = all[key] || { channelId: null, messageIds: [] };
+    const messages = Array.isArray(entry.messages) ? entry.messages.slice(0, 10) : [];
+
+    // Ausschalten oder Kanalwechsel: alte Nachrichten entfernen
+    if (!messages.length || !entry.channelId || (prev.channelId && prev.channelId !== entry.channelId)) {
+      await this._deleteMessages(prev.channelId, prev.messageIds);
+      if (!messages.length || !entry.channelId) {
+        delete all[key];
+        this._writeOverviewState(all);
+        console.log('[AppEventQueue] Befehls-Übersicht entfernt');
+        return true;
+      }
+      prev.messageIds = [];
+    }
+
+    let channel;
+    try {
+      channel = await this.client.channels.fetch(entry.channelId);
+    } catch (err) {
+      if ([50001, 50013, 10003].includes(err.code)) {
+        console.warn(`[AppEventQueue] Übersichts-Kanal ${entry.channelId} nicht erreichbar: ${err.message}`);
+        return true;
+      }
+      return false;
+    }
+    if (!channel || typeof channel.send !== 'function') {
+      console.warn(`[AppEventQueue] Übersichts-Kanal ${entry.channelId} nicht gefunden/kein Textkanal`);
+      return true;
+    }
+
+    const ids = [];
+    try {
+      for (let i = 0; i < messages.length; i += 1) {
+        const m = messages[i] || {};
+        const payload = {
+          content: typeof m.content === 'string' && m.content ? m.content.slice(0, 2000) : null,
+          embeds: Array.isArray(m.embeds) ? m.embeds.slice(0, 10) : [],
+          allowedMentions: { parse: [] },
+        };
+        const oldId = prev.messageIds[i];
+        let done = null;
+        if (oldId) {
+          try {
+            const old = await channel.messages.fetch(oldId);
+            done = await old.edit(payload);
+          } catch (err) {
+            if (err.code !== 10008) throw err; // 10008 Unknown Message -> neu posten
+          }
+        }
+        if (!done) done = await channel.send({ ...payload, content: payload.content ?? undefined });
+        ids.push(done.id);
+      }
+      // überzählige alte Nachrichten löschen
+      const extra = prev.messageIds.slice(messages.length);
+      if (extra.length) await this._deleteMessages(entry.channelId, extra);
+    } catch (err) {
+      // Bisher gepostete IDs trotzdem merken, sonst entstehen Duplikate
+      all[key] = { channelId: entry.channelId, messageIds: ids.concat(prev.messageIds.slice(ids.length)) };
+      this._writeOverviewState(all);
+      if ([50001, 50013, 10003].includes(err.code)) {
+        console.warn(`[AppEventQueue] Übersicht nicht möglich (Kanal ${entry.channelId}): ${err.message} - Bot-Rechte prüfen (Nachrichten senden, Links einbetten)`);
+        return true;
+      }
+      console.warn(`[AppEventQueue] Übersicht fehlgeschlagen: ${err.message}`);
+      return false;
+    }
+    all[key] = { channelId: entry.channelId, messageIds: ids };
+    this._writeOverviewState(all);
+    console.log(`[AppEventQueue] Befehls-Übersicht in #${channel.name || entry.channelId} aktualisiert (${ids.length} Nachricht(en))`);
+    return true;
+  }
+
   /** @returns {Promise<boolean>} true = erledigt (auch bei "User nicht erreichbar") */
   async _deliver(entry) {
     if (!entry) return true;
 
     // Kanal-Ankündigungen (Go-Live / neues Video)
     if (entry.type === 'announce.post' || entry.type === 'announce.edit') return this._deliverAnnounce(entry);
+
+    // Befehls-Übersicht im Info-Kanal
+    if (entry.type === 'overview.sync') return this._deliverOverview(entry);
 
     // Bingo-Rueckkanal (Broadcast an verknuepfte User bzw. Lifecycle)
     if (entry.type === 'bingo.round-started') return this._deliverBingoRoundStarted();

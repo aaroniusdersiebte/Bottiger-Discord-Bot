@@ -66,6 +66,8 @@ module.exports = {
     // der Bot stellt sie dem Nutzer per DM zu (AppEventQueueService).
     pendingBotNotifications: process.env.PENDING_BOT_NOTIFICATIONS_PATH
       || path.resolve(__dirname, '../config/pending-bot-notifications.json'),
+    // Befehls-Übersicht (Zappify AU10): gemerkte Nachrichten-IDs im Info-Kanal
+    overviewState: process.env.OVERVIEW_STATE_PATH || path.resolve(__dirname, '../config/overview-state.json'),
   },
 
   // Bild-Freigabe-Modus (Zappify uebergibt ZAPPIFY_IMAGE_REVIEW_MODE beim spawn):

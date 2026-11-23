@@ -49,3 +49,4 @@ config/leaderboard-state.json
 
 ### Build-Artefakt (esbuild-Bundle fuer die Zappify-Auslieferung) ###
 dist/
+config/overview-state.json
